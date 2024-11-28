@@ -1,0 +1,11 @@
+{
+  "name": "@mitchell-collins/tester",
+  "version": "1.0.0",
+  "description": "Used to test code",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Mitchell Collins",
+  "license": "ISC"
+}
