@@ -1,6 +1,6 @@
 import validator from "@mitchell-collins/validator";
 
-class Tester {
+export default class Tester {
     #name;
     #description;
     #function;
@@ -68,7 +68,7 @@ class Tester {
     }
 
     async run() {
-        console.log(`Running ${this.#name} used to ${this.#description}`);
+        console.log(`\nRunning ${this.#name} used to ${this.#description}:`);
 
         for (let i = 0; i < this.#sampleInputsAndOutputs.length; i++) {
             const { inputs, expectedOutput } = this.#sampleInputsAndOutputs[i];
@@ -76,11 +76,11 @@ class Tester {
             const output = await this.#function(...inputs);
 
             if (output === expectedOutput) {
-                console.log(`Passed Test ${i + 1} ✅`);
+                console.log(`   - Passed Test ${i + 1} ✅`);
             } else {
-                console.log(`Failed Test ${i + 1} ❌`);
-                console.log(`Expected Output: ${expectedOutput}`);
-                console.log(`Actual Output: ${output}`);
+                console.log(`   - Failed Test ${i + 1} ❌`);
+                console.log(`       Expected Output: ${expectedOutput}`);
+                console.log(`       Actual Output: ${output}`);
             }
         }
 
@@ -95,6 +95,6 @@ class Tester {
 
         const endTime = new Date().getTime();
 
-        console.log("Duration: " + (endTime - startTime) + "ms");
+        console.log("   - Duration: " + (endTime - startTime) + "ms");
     }
 }
