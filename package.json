@@ -7,8 +7,16 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MitchellCollins/Tester.git"
+  },
   "author": "Mitchell Collins",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MitchellCollins/Tester/issues"
+  },
+  "homepage": "https://github.com/MitchellCollins/Tester#readme",
   "dependencies": {
     "@mitchell-collins/validator": "^1.0.2"
   }
