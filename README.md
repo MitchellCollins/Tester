@@ -3,7 +3,7 @@ A npm package that is used to create `Tester` objects that test a provided `func
 
 Install Package:
 ```CLI
-npm i @mitchell-collins/Tester 
+npm i @mitchell-collins/tester 
 ```
 ### Attributes
 The `Tester` object has many attributes these include:
