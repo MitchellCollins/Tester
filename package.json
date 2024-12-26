@@ -1,6 +1,6 @@
 {
   "name": "@mitchell-collins/tester",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Used to test code",
   "main": "index.js",
   "type": "module",
@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/MitchellCollins/Tester#readme",
   "dependencies": {
-    "@mitchell-collins/validator": "^1.0.2"
+    "@mitchell-collins/superclass": "^1.0.2",
+    "@mitchell-collins/validator": "^1.3.3"
   }
 }
