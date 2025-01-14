@@ -19,7 +19,7 @@
   "homepage": "https://github.com/MitchellCollins/Tester#readme",
   "dependencies": {
     "@mitchell-collins/superclass": "^1.0.3",
-    "@mitchell-collins/validator": "^1.4.6",
+    "@mitchell-collins/validator": "^1.5.8",
     "axios": "^1.7.9"
   }
 }

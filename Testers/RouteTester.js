@@ -1,12 +1,25 @@
-import axios, { HttpStatusCode, AxiosRequestConfig } from "axios";
+import axios, { HttpStatusCode } from "axios";
 import validator from "@mitchell-collins/validator";
 import Tester from "./Tester.js";
 
 /**
- * The `RouteTesterMethod` defines the possible HTTP request methods that an instance of the `RouteTester` is capable of making.
+ * The `RouteTesterMethods` is an object that defines the methods that an instance of the `RouteTester` constructor is able to make to
+ * a route for testing.
  * 
- * @typedef {"get" | "post" | "patch" | "put" | "delete"} RouteTesterMethod
+ * @typedef {object} RouteTesterMethods
+ * @property {"get"} Get - the get request method
+ * @property {"post"} POST - the post request method
+ * @property {"patch"} PATCH - the patch request method
+ * @property {"put"} PUT - the put request method
+ * @property {"delete"} DELETE - the delete request method
  */
+const RouteTesterMethods = {
+    GET: "get",
+    POST: "post",
+    PATCH: "patch",
+    PUT: "put",
+    DELETE: "delete"
+};
 
 /**
  * The `RouteTesterOutput` is an object that is used to define the expected output that is returned from a route that is tested
@@ -19,10 +32,25 @@ import Tester from "./Tester.js";
  * 
  * The `data` property can have the value of anything, but the `status` property must have a value of `HttpStatusCode`.
  * 
- * @typedef {object} RouteTesterOutput
- * @property {*} data the expected data that the route response with to the request
- * @property {HttpStatusCode} status the expected status of the response
+ * ```
+ * RouteTesterOutput = {
+ *  data: *,
+ *  status: HttpStatusCode
+ * }
+ * ```
+ * 
+ * @param {*} data the expected data that the route response with to the request
+ * @param {HttpStatusCode} status the expected status of the response
+ * @returns {RouteTesterOutput} an object that is used to define the expected output that is returned from a route that is tested by an instance of the `RouteTester` constructor
  */
+function RouteTesterOutput(data, status) {
+    validator.checkUndefinedArray([data, status], ["data", "status"]);
+    validator.checkDataType(status, "status", "number");
+    validator.checkIsHttpStatusCode(status, "status");
+    
+    this.data = data;
+    this.status = status;
+}
 
 /**
  * The `RouteTester` constructor is used to create objects that can run tests on a route of
@@ -131,7 +159,7 @@ import Tester from "./Tester.js";
  * 
  * @extends Tester
  */
-export default class RouteTester extends Tester {
+class RouteTester extends Tester {
 
     /**
      * The `url` of the route that is being tested.
@@ -270,7 +298,7 @@ export default class RouteTester extends Tester {
      * @param {String} name a name given to the tester for identication
      * @param {String} description describes what the tester is testing
      * @param {String} url the url of the route that the tester is testing
-     * @param {RouteTesterMethod} method the HTTP request method that the tester will make to the route
+     * @param {RouteTesterMethods} method the HTTP request method that the tester will make to the route
      * @param {Array<RouteTesterOutput>} outputs an array of the expected response from the route for each test
      * 
      * @extends Tester
@@ -305,7 +333,7 @@ export default class RouteTester extends Tester {
 
     /**
      * Returns the HTTP request `method`.
-     * @returns {RouteTesterMethod} the HTTP request method that the tester will make to the route
+     * @returns {RouteTesterMethods} the HTTP request method that the tester will make to the route
      */
     getMethod() {
         return this.#method;
@@ -428,7 +456,7 @@ export default class RouteTester extends Tester {
 
     /**
      * Sets a new HTTP request `method` for the test. 
-     * @param {RouteTesterMethod} newMethod the new HTTP request method that the tester will make to the route
+     * @param {RouteTesterMethods} newMethod the new HTTP request method that the tester will make to the route
      */
     setMethod(newMethod) {
         validator.checkUndefined(newMethod, "newMethod");
@@ -996,4 +1024,10 @@ export default class RouteTester extends Tester {
 
         console.log(`   - Duration: ${endTime - startTime}ms`);
     }
+}
+
+export {
+    RouteTester as default,
+    RouteTesterOutput,
+    RouteTesterMethods
 }

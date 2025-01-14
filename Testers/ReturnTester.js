@@ -1,4 +1,4 @@
-import FunctionTester from "./FunctionTester.js";
+import FunctionTester, { FunctionTesterSample } from "./FunctionTester.js";
 
 /**
  * The `ReturnTester` constructor is used to create an object that tests functions that return a value.
@@ -11,7 +11,7 @@ import FunctionTester from "./FunctionTester.js";
  * - name - the name of the tester
  * - description - a description of what the tester is testing
  * - function - the function that is tested by the tester
- * - sampleInputsOutputs - an array of sample inputs and output that are used to test the function
+ * - inputOutputSamples - an array of sample inputs and output that are used to test the `function`
  * 
  * The `ReturnTester` defines the methods:
  * - getter methods
@@ -49,6 +49,8 @@ import FunctionTester from "./FunctionTester.js";
  *      );
  * 
  *      sumTester.run();
+ * 
+ * @extends FunctionTester
  */
 export default class ReturnTester extends FunctionTester {
 
@@ -63,7 +65,7 @@ export default class ReturnTester extends FunctionTester {
      * - name - the name of the tester
      * - description - a description of what the tester is testing
      * - function - the function that is tested by the tester
-     * - sampleInputsOutputs - an array of sample inputs and output that are used to test the function
+     * - inputOutputSamples - an array of sample inputs and output that are used to test the `function`
      * 
      * The `ReturnTester` defines the methods:
      * - getter methods
@@ -89,27 +91,23 @@ export default class ReturnTester extends FunctionTester {
      *                  inputs: [2, 5],
      *                  output: 7
      *              },
-     *              {
-     *                  inputs: [7, 3],
-     *                  output: 10
-     *              },
-     *              {
-     *                  inputs: [12, 7]
-     *                  output: 19
-     *              }
+     *              new FunctionTesterSample([7, 3], 10),
+     *              new FunctionTesterSample([12, 7], 19)
      *          ]
      *      );
      * 
      *      sumTester.run();
      * 
-     * @param {String} name
-     * @param {String} description
-     * @param {Function} func
-     * @param {Array<object>} sampleInputsOutputs
+     * @param {String} name the name of the tester
+     * @param {String} description a description of what the tester is testing
+     * @param {Function} func the function that is tested by the tester
+     * @param {Array<FunctionTesterSample>} inputOutputSamples an array of sample inputs and output that are used to test the `function`
+     * 
+     * @extends FunctionTester
      */
-    constructor(name, description, func, sampleInputsOutputs) {
+    constructor(name, description, func, inputOutputSamples) {
         // inherits from FunctionTester and Tester constructors
-        super(name, description, func, sampleInputsOutputs);
+        super(name, description, func, inputOutputSamples);
     }
 
     /**
@@ -122,8 +120,8 @@ export default class ReturnTester extends FunctionTester {
         console.log(`\nRunning ${this.getName()} used to ${this.getDescription()}:`);
 
         // loops through sample inputs and outputs testing the function
-        for (let i = 0; i < this.getSampleInputsOutputs().length; i++) {
-            const { inputs, output: expectedOutput } = this.getSampleInputsOutputs()[i];
+        for (let i = 0; i < this.getInputOutputSamples().length; i++) {
+            const { inputs, output: expectedOutput } = this.getInputOutputSamples()[i];
 
             const output = await this.getFunction()(...inputs);
 
@@ -145,7 +143,7 @@ export default class ReturnTester extends FunctionTester {
     async time() {
         const startTime = new Date().getTime();
 
-        const { inputs } = this.getSampleInputsOutputs()[0];
+        const { inputs } = this.getInputOutputSamples()[0];
         await this.getFunction()(...inputs);
 
         const endTime = new Date().getTime();

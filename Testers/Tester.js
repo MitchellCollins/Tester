@@ -2,7 +2,7 @@ import SuperClass from "@mitchell-collins/superclass";
 import validator from "@mitchell-collins/validator";
 
 /**
- * The `Tester` constructor is used to define a `Tester` which is used to test code that it outputs the expected output.
+ * The `Tester` constructor is used to define a tester which is used to test code that it outputs the expected output.
  * 
  * The `Tester` constructor is the super class of multiple children Tester classes that have different attrtributes and methods as 
  * they are design to test different types of codes. The child constructors of the `Tester` constructor include:
@@ -16,22 +16,24 @@ import validator from "@mitchell-collins/validator";
  * - `LogTester` - tests the value that is logged to the console by a function
  * 
  * The attributes that this `Tester` constructor defines include:
- * - `name` - the name of the `Tester`
- * - `description` - a description of what the `Tester` is testing
+ * - `name` - the name of the tester
+ * - `description` - a description of what the tester is testing
+ * 
+ * @extends SuperClass
  */
 export default class Tester extends SuperClass {
     /**
-     * Is the name of the `Tester`.
+     * Is the name of the tester.
      */
     #name;
 
     /**
-     * Is a description of what the `Tester` tests.
+     * Is a description of what the tester tests.
      */
     #description;
 
     /**
-     * The `Tester` constructor is used to define a `Tester` which is used to test code that it outputs the expected output.
+     * The `Tester` constructor is used to define a tester which is used to test code that it outputs the expected output.
      * 
      * The `Tester` constructor is the super class of multiple children Tester classes that have different attrtributes and methods as 
      * they are design to test different types of codes. The child constructors of the `Tester` constructor include:
@@ -45,11 +47,13 @@ export default class Tester extends SuperClass {
      * - `LogTester` - tests the value that is logged to the console by a function
      * 
      * The attributes that this `Tester` constructor defines include:
-     * - `name` - the name of the `Tester`
-     * - `description` - a description of what the `Tester` is testing
+     * - `name` - the name of the tester
+     * - `description` - a description of what the tester is testing
      * 
-     * @param {String} name 
-     * @param {String} description
+     * @param {String} name the name of the tester
+     * @param {String} description a description of what the tester is testing
+     * 
+     * @extends SuperClass
      */
     constructor(name, description) {
         validator.checkUndefinedArray([name, description], ["name", "description"]);
@@ -61,24 +65,24 @@ export default class Tester extends SuperClass {
     }
 
     /**
-     * Returns the `name` of this `Tester`.
-     * @returns {String}
+     * Returns the `name` of this tester.
+     * @returns {String} the name of the tester
      */
     getName() {
         return this.#name;
     }
 
     /**
-     * Returns the `description` of this `Tester`.
-     * @returns {String}
+     * Returns the `description` of this tester.
+     * @returns {String} a description of what the tester is testing
      */
     getDescription() {
         return this.#description;
     }
 
     /**
-     * Used to set a new value for the `name` attribute of this `Tester`.
-     * @param {String} newName 
+     * Used to set a new value for the `name` attribute of this tester.
+     * @param {String} newName the new `name` of the tester
      */
     setName(newName) {
         validator.checkUndefined(newName, "newName");
@@ -87,8 +91,8 @@ export default class Tester extends SuperClass {
     }
 
     /**
-     * Used to set a new value for the `description` attribute of this `Tester`.
-     * @param {String} newDescription
+     * Used to set a new value for the `description` attribute of this tester.
+     * @param {String} newDescription the new `description` of what the tester is testing
      */
     setDescription(newDescription) {
         validator.checkUndefined(newDescription, "newDescription");
