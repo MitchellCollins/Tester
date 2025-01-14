@@ -1,4 +1,5 @@
 import FunctionTester, { FunctionTesterSample } from "./FunctionTester.js";
+import { arraysEqual, jsonsEqual } from "../utils.js";
 
 /**
  * The `ReturnTester` constructor is used to create an object that tests functions that return a value.
@@ -17,7 +18,6 @@ import FunctionTester, { FunctionTesterSample } from "./FunctionTester.js";
  * - getter methods
  * - setter methods
  * - run - used to run the function with the sample inputs and outputs
- * - time - used to run the function once and determine its duration
  * 
  * Information on the tests are logged into the console, if a test fails it logs what the actual output was and what the expected 
  * output was.
@@ -33,18 +33,9 @@ import FunctionTester, { FunctionTesterSample } from "./FunctionTester.js";
  *          "tests the addNumbers function",
  *          addNumbers,
  *          [
- *              {
- *                  inputs: [2, 5],
- *                  output: 7
- *              },
- *              {
- *                  inputs: [7, 3],
- *                  output: 10
- *              },
- *              {
- *                  inputs: [12, 7]
- *                  output: 19
- *              }
+ *              new FunctionTesterSample([2, 5], 7),
+ *              new FunctionTesterSample([7, 3], 10),
+ *              new FunctionTesterSample([12, 7], 19)
  *          ]
  *      );
  * 
@@ -71,7 +62,6 @@ export default class ReturnTester extends FunctionTester {
      * - getter methods
      * - setter methods
      * - run - used to run the function with the sample inputs and outputs
-     * - time - used to run the function once and determine its duration
      * 
      * Information on the tests are logged into the console, if a test fails it logs what the actual output was and what the expected 
      * output was.
@@ -87,10 +77,7 @@ export default class ReturnTester extends FunctionTester {
      *          "tests the addNumbers function",
      *          addNumbers,
      *          [
-     *              {
-     *                  inputs: [2, 5],
-     *                  output: 7
-     *              },
+     *              new FunctionTesterSample([2, 5], 7),
      *              new FunctionTesterSample([7, 3], 10),
      *              new FunctionTesterSample([12, 7], 19)
      *          ]
@@ -117,37 +104,32 @@ export default class ReturnTester extends FunctionTester {
      * of the given `function`'s process.
      */
     async run() {
+        // logs information on tester
         console.log(`\nRunning ${this.getName()} used to ${this.getDescription()}:`);
 
+        const inputOutputSamples = this.getInputOutputSamples();
+
         // loops through sample inputs and outputs testing the function
-        for (let i = 0; i < this.getInputOutputSamples().length; i++) {
-            const { inputs, output: expectedOutput } = this.getInputOutputSamples()[i];
+        for (let i = 0; i < inputOutputSamples.length; i++) {
+            
+            const { inputs, output: expectedOutput } = inputOutputSamples[i];
+            const startTime = new Date().getTime();
 
             const output = await this.getFunction()(...inputs);
 
-            if (output === expectedOutput) {
+            if (output === expectedOutput || jsonsEqual(output, expectedOutput) || arraysEqual(output, expectedOutput)) {
                 console.log(`   - Passed Test ${i + 1} ✅`);
             } else {
                 console.log(`   - Failed Test ${i + 1} ❌`);
-                console.log(`       Expected Output: ${expectedOutput}`);
-                console.log(`       Actual Output: ${output}`);
+                console.log("       Expected Output:", expectedOutput);
+                console.log("       Actual Output:", output);
+            }
+
+            // calculates and logs duration of function
+            if (i === inputOutputSamples.length - 1) {
+                const endTime = new Date().getTime();
+                console.log("   - Duration: " + (endTime - startTime) + "ms");
             }
         }
-
-        this.time();
-    }
-
-    /**
-     * Used to determine the duration of the provide `function`'s process which is logged into the console.
-     */
-    async time() {
-        const startTime = new Date().getTime();
-
-        const { inputs } = this.getInputOutputSamples()[0];
-        await this.getFunction()(...inputs);
-
-        const endTime = new Date().getTime();
-
-        console.log("   - Duration: " + (endTime - startTime) + "ms");
     }
 }
