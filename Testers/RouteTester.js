@@ -1,6 +1,7 @@
 import axios, { HttpStatusCode } from "axios";
 import validator from "@mitchell-collins/validator";
 import Tester from "./Tester.js";
+import { arraysEqual, jsonsEqual } from "../utils.js";
 
 /**
  * The `RouteTesterMethods` is an object that defines the methods that an instance of the `RouteTester` constructor is able to make to
@@ -76,7 +77,6 @@ function RouteTesterOutput(data, status) {
  * - getter methods
  * - setter methods
  * - run - which runs the tests on the route
- * - time - which gets the duration of request to response from route
  * 
  * When constructing a `RouteTester` you define the attributes `name`, `description`,
  * `url`, `method` and `outputs`. You then define the other attributes through the use
@@ -90,22 +90,16 @@ function RouteTesterOutput(data, status) {
  *          "http://example.url.com/:id/:name",
  *          "get",
  *          [
- *              {
- *                  data: {
- *                      id: 0,
- *                      name: "Jack",
- *                      age: 56
- *                  },
- *                  status: 200
- *              },
- *              {
- *                  data: {
- *                      id: 1,
- *                      name: "John",
- *                      age: 34
- *                  },
- *                  status: 200
- *              }
+ *              new RouteTesterOutput({ 
+ *                  id: 0,
+ *                  name: "Jack",
+ *                  age: 56
+ *              }, 200),
+ *              new RouteTesterOutput({
+ *                  id: 1,
+ *                  name: "John",
+ *                  age: 34
+ *              }, 200)
  *          ]
  *      );
  *      
@@ -220,7 +214,6 @@ class RouteTester extends Tester {
      * - getter methods
      * - setter methods
      * - run - which runs the tests on the route
-     * - time - which gets the duration of request to response from route
      * 
      * When constructing a `RouteTester` you define the attributes `name`, `description`,
      * `url`, `method` and `outputs`. You then define the other attributes through the use
@@ -234,16 +227,16 @@ class RouteTester extends Tester {
      *          "http://example.url.com/:id/:name",
      *          "get",
      *          [
-     *              {
+     *              new RouteTesterOutput({ 
      *                  id: 0,
      *                  name: "Jack",
      *                  age: 56
-     *              },
-     *              {
+     *              }, 200),
+     *              new RouteTesterOutput({
      *                  id: 1,
      *                  name: "John",
      *                  age: 34
-     *              }
+     *              }, 200)
      *          ]
      *      );
      *      
@@ -953,6 +946,7 @@ class RouteTester extends Tester {
 
             // makes test request
             let response;
+            const startTime = new Date().getTime();
 
             // checks if it is a get or delete request 
             // this is done as the get and delete requests don't have a data argument
@@ -968,7 +962,7 @@ class RouteTester extends Tester {
 
             // checks if the actual output was equal to the expected output
             if (
-                data === expectedData || typeof data === "object" && JSON.stringify(data) === JSON.stringify(expectedData) &&
+                data === expectedData || jsonsEqual(data, expectedData) || arraysEqual(data, expectedData) &&
                 status === expectedStatus
             ) {
                 console.log(`   - Passed Test ${i + 1} ✅`);
@@ -977,7 +971,7 @@ class RouteTester extends Tester {
                 console.log(`   - Failed Test ${i + 1} ❌`);
 
                 // logs data info if expected data and actual data aren't equal
-                if (data !== expectedData && typeof data === "object" && JSON.stringify(data) !== JSON.stringify(expectedData)) {
+                if (data !== expectedData && !jsonsEqual(data, expectedData) && !arraysEqual(data, expectedData)) {
                     console.log("       Expected Data Output: " , expectedData);
                     console.log("       Actual Data Output: " , data);
                 } 
@@ -988,41 +982,13 @@ class RouteTester extends Tester {
                     console.log("       Actual Status Output: " , status);
                 }
             }
+
+            // calculates and logs duration of route
+            if (i === this.#outputs.length - 1) {
+                const endTime = new Date().getTime();
+                console.log("   - Duration: " + (endTime - startTime) + "ms");
+            }
         }  
-        
-        this.time();
-    }
-
-    /**
-     * The `time` method logs the duration to get a response from the determined route in the console.
-     */
-    async time() {
-        const startTime = new Date().getTime();
-
-        let requestURL = this.#url;
-
-        // checks if there are params
-        if (this.#params[0] !== undefined && Object.keys(this.#params[0]).length > 0) {
-            requestURL = this.#replaceParamPlaceHolders(requestURL, this.#params[0]);
-        }
-
-        // checks if there are params
-        if (this.#querys[0] !== undefined && Object.keys(this.#querys[0]).length > 0) {
-            requestURL = this.#intergrateQueryURL(requestURL, this.#querys[0]);
-        }
-
-        // checks if it is a get or delete request 
-        // this is done as the get and delete requests don't have a data argument
-        if (this.#method === "get" || this.#method === "delete") {
-            await axios[this.#method](requestURL, this.#configs[0] || undefined);
-
-        } else {
-            await axios[this.#method](requestURL, this.#bodys[0] || {}, this.#configs[0] || undefined);
-        }
-
-        const endTime = new Date().getTime();
-
-        console.log(`   - Duration: ${endTime - startTime}ms`);
     }
 }
 

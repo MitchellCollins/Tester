@@ -1,4 +1,5 @@
 import FunctionTester, { FunctionTesterSample } from "./FunctionTester.js";
+import { arraysEqual, jsonsEqual } from "../utils.js";
 
 /**
  * The `logTestMapper` is used by the custom log function to determine which tester and test is being runned and where the logged
@@ -8,8 +9,8 @@ import FunctionTester, { FunctionTesterSample } from "./FunctionTester.js";
  * @property {Number} `test` determine which test is being runned
  */
 let logTestMapper = {
-    tester: null,
-    test: null
+    tester: new String,
+    test: new Number
 }
 
 /**
@@ -157,7 +158,7 @@ class LogTester extends FunctionTester {
     async result(testNumber, output) {
         const expectedOutput = this.getInputOutputSamples()[testNumber].output;
 
-        if (output === expectedOutput) {
+        if (output === expectedOutput || jsonsEqual(output, expectedOutput) || arraysEqual(output, expectedOutput)) {
             this.#originalLogFunction(`   - Passed Test ${testNumber + 1} ✅`);
         } else {
             this.#originalLogFunction(`   - Failed Test ${testNumber + 1} ❌`);
