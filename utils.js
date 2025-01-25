@@ -1,3 +1,5 @@
+import validator from "@mitchell-collins/validator";
+
 /**
  * Used to check if two arrays are equal.
  * @param {any[]} array1 is check if it is equal to `array2`
@@ -27,7 +29,18 @@ function jsonsEqual(json1, json2) {
     return JSON.stringify(json1) === JSON.stringify(json2);
 }
 
+/**
+ * Used to validate an object if it is defined.
+ * @param {*} object the object that will be validated if defined
+ * @param {String} objectName the name of the `object`
+ */
+function validateDefinedObject(object, objectName) {
+    if (object !== undefined && object !== null)
+        validator.checkDataType(object, objectName, "object");
+}
+
 export {
     arraysEqual,
-    jsonsEqual
+    jsonsEqual,
+    validateDefinedObject
 }

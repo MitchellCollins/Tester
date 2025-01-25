@@ -1,7 +1,7 @@
 import axios, { HttpStatusCode } from "axios";
 import validator from "@mitchell-collins/validator";
 import Tester from "./Tester.js";
-import { arraysEqual, jsonsEqual } from "../utils.js";
+import { arraysEqual, jsonsEqual, validateDefinedObject } from "../utils.js";
 
 /**
  * The `RouteTesterMethods` is an object that defines the methods that an instance of the `RouteTester` constructor is able to make to
@@ -54,11 +54,62 @@ function RouteTesterOutput(data, status) {
 }
 
 /**
+ * The `RouteTest` is an object that defines various information that is used to test a route by a instance of the `RouteTester`
+ * constructor.
+ * 
+ * The information that it defines include:
+ * - `output` - the expected output from the tested route
+ * - `body` - a object that is passed through the body during a request to the route
+ * - `config` - a object that is passed through the config during a request to the route
+ * - `querys` - a object that is passed through the querys during a request to the route
+ * - `params` - a object that is passed through the params during a request to the route
+ * 
+ * ```
+ * RouteTest = {
+ *      output: {
+ *          data: *,
+ *          status: HttpStatusCode
+ *      },
+ *      body?: {...}
+ *      config?: {...}
+ *      querys?: {...}
+ *      params?: {...}
+ * }
+ * ```
+ * 
+ * @param {object} data information that is used to test a route
+ * @param {RouteTesterOutput} data.output the expected output from the tested route
+ * @param {object | undefined | null} [data.body] a object that is passed through the body during a request to the route
+ * @param {import("axios").AxiosRequestConfig | undefined | null} [data.config] a object that is passed through the config during a request to the route
+ * @param {object | undefined | null} [data.querys] a object that is passed through the querys during a request to the route
+ * @param {object | undefined | null} [data.params] a object that is passed through the param paths during a request to the route
+ * @returns {RouteTest} a object with information that is used to test a route
+ */
+function RouteTest(data) {
+    validator.checkUndefined(data, "data");
+    validator.checkDataType(data, "data", "object");
+
+    const { output, body, config, querys, params } = data;
+
+    validator.checkUndefined(output, "output");
+    validator.checkInstanceType(output, "output", "RouteTesterOutput");
+
+    // validates variables if they are defined
+    validateDefinedObject(body, "body");
+    validateDefinedObject(config, "config");
+    validateDefinedObject(querys, "querys");
+    validateDefinedObject(params, "params");
+
+    this.output = output;
+    this.body = body === undefined || body === null ? {} : body;
+    this.config = config === undefined || config === null ? {} : config;
+    this.querys = querys === undefined || querys === null ? {} : querys;
+    this.params = params === undefined || params === null ? {} : params;
+}
+
+/**
  * The `RouteTester` constructor is used to create objects that can run tests on a route of
- * a server. The objects make multiply tests to the route and for each test new values are
- * passed through the request with the new values being assigned at each index of the arrays 
- * for the multiply attributes, these include `outputs`, `bodys`, `configs`, `params` and 
- * `querys`. 
+ * a server. It has an array of tests that are instances of the `RouteTest` that are used to test a route.
  * 
  * The `RouteTester` is a child class of the `Tester` class that defined the attributes:
  * - `name` - the name of the tester
@@ -67,11 +118,7 @@ function RouteTesterOutput(data, status) {
  * The `RouteTester` defines the attributes:
  * - `url` - the url of the route the tester is testing
  * - `method` - the HTTP request method 
- * - `outputs` - an array of the expected response from route for each test
- * - `bodys` - an array of objects that are passed through the body for each test
- * - `configs` - an array of objects that are passed through the config for each test
- * - `params` - an array of objects that are passed through the params for each test
- * - `querys` - an array of objects that are passed through the querys for each test
+ * - `tests` - an array of route tests
  * 
  * The `RouteTester` defines the methods:
  * - getter methods
@@ -79,75 +126,51 @@ function RouteTesterOutput(data, status) {
  * - run - which runs the tests on the route
  * 
  * When constructing a `RouteTester` you define the attributes `name`, `description`,
- * `url`, `method` and `outputs`. You then define the other attributes through the use
- * of the setter methods.
+ * `url`, `method` and `tests`.
  * 
- * Example:
+ * @example
  * 
  *      const routeTester = new RouteTester(
  *          "Route Tester", 
  *          "Tests the route",
  *          "http://example.url.com/:id/:name",
- *          "get",
+ *          RouteTesterMethods.GET,
  *          [
- *              new RouteTesterOutput({ 
- *                  id: 0,
- *                  name: "Jack",
- *                  age: 56
- *              }, 200),
- *              new RouteTesterOutput({
- *                  id: 1,
- *                  name: "John",
- *                  age: 34
- *              }, 200)
+ *              new RouteTest({ 
+ *                  output: new RouteTesterOutput({ 
+ *                      id: 1,
+ *                      name: "Jack",
+ *                      age: 56
+ *                  }, 200),
+ *                  body: { age: 56 },
+ *                  config: { 
+ *                      headers: { apiKey: "exampleKey" }
+ *                  },
+ *                  params: { 
+ *                      id: 1,
+ *                      name: "Jack"
+ *                  },
+ *                  querys: { name: "Jack" }
+ *              }),
+ *              
+ *              new RouteTest({
+ *                  output: new RouteTesterOutput({
+ *                      id: 2,
+ *                      name: "John",
+ *                      age: 34
+ *                  }, 200),
+ *                  body: { age: 34 },
+ *                  config: {
+ *                      headers: { apiKey: "exampleKey" }
+ *                  },
+ *                  params: {
+ *                      id: 2,
+ *                      name: "John"
+ *                  },
+ *                  querys: { name: "John" }
+ *              })
  *          ]
  *      );
- *      
- *      // defines bodys
- *      routeTester.setBodys([
- *          {
- *              age: 56
- *          },
- *          {
- *              age: 34
- *          }
- *      ]);
- * 
- *      // defines configs
- *      routeTester.setConfigs([
- *          {
- *              Header: {
- *                  apiKey: "exampleKey"
- *              }
- *          },
- *          {
- *              Header: {
- *                  apiKey: "exampleKey"
- *              }
- *          }
- *      ]);
- * 
- *      // defines params
- *      routeTester.setParams([
- *          {
- *              id: 0,
- *              name: "Jack"
- *          },
- *          {
- *              id: 1,
- *              name: "John"
- *          }
- *      ]);
- * 
- *      // defines querys
- *      routeTester.setQuerys([
- *          {
- *              name: "Jack"
- *          },
- *          {
- *              name: "John"
- *          }
- *      ]);
  * 
  *      routeTester.run();
  * 
@@ -166,36 +189,13 @@ class RouteTester extends Tester {
     #method;
 
     /**
-     * An array of the expected response from route for each test.
+     * An array of route tests.
      */
-    #outputs;
-
-    /**
-     * An array of objects that are passed through the body for each test.
-     */
-    #bodys = [];
-
-    /**
-     * An array of objects that are passed through the config for each test.
-     */
-    #configs = [];
-
-    /**
-     * An array of objects that are passed through the params for each test.
-     */
-    #params = [];
-
-    /**
-     * An array of objects that are passed through the querys for each test.
-     */
-    #querys = [];
+    #tests;
     
     /**
      * The `RouteTester` constructor is used to create objects that can run tests on a route of
-     * a server. The objects make multiply tests to the route and for each test new values are
-     * passed through the request with the new values being assigned at each index of the arrays 
-     * for the multiply attributes, these include `outputs`, `bodys`, `configs`, `params` and 
-     * `querys`. 
+     * a server. It has an array of tests that are instances of the `RouteTest` that are used to test a route.
      * 
      * The `RouteTester` is a child class of the `Tester` class that defined the attributes:
      * - `name` - the name of the tester
@@ -204,11 +204,7 @@ class RouteTester extends Tester {
      * The `RouteTester` defines the attributes:
      * - `url` - the url of the route the tester is testing
      * - `method` - the HTTP request method 
-     * - `outputs` - an array of the expected response from route for each test
-     * - `bodys` - an array of objects that are passed through the body for each test
-     * - `configs` - an array of objects that are passed through the config for each test
-     * - `params` - an array of objects that are passed through the params for each test
-     * - `querys` - an array of objects that are passed through the querys for each test
+     * - `tests` - an array of route tests
      * 
      * The `RouteTester` defines the methods:
      * - getter methods
@@ -216,75 +212,51 @@ class RouteTester extends Tester {
      * - run - which runs the tests on the route
      * 
      * When constructing a `RouteTester` you define the attributes `name`, `description`,
-     * `url`, `method` and `outputs`. You then define the other attributes through the use
-     * of the setter methods.
+     * `url`, `method` and `tests`.
      * 
-     * Example:
+     * @example
      * 
      *      const routeTester = new RouteTester(
      *          "Route Tester", 
      *          "Tests the route",
      *          "http://example.url.com/:id/:name",
-     *          "get",
+     *          RouteTesterMethods.GET,
      *          [
-     *              new RouteTesterOutput({ 
-     *                  id: 0,
-     *                  name: "Jack",
-     *                  age: 56
-     *              }, 200),
-     *              new RouteTesterOutput({
-     *                  id: 1,
-     *                  name: "John",
-     *                  age: 34
-     *              }, 200)
+     *              new RouteTest({ 
+     *                  output: new RouteTesterOutput({ 
+     *                      id: 1,
+     *                      name: "Jack",
+     *                      age: 56
+     *                  }, 200),
+     *                  body: { age: 56 },
+     *                  config: { 
+     *                      headers: { apiKey: "exampleKey" }
+     *                  },
+     *                  params: { 
+     *                      id: 1,
+     *                      name: "Jack"
+     *                  },
+     *                  querys: { name: "Jack" }
+     *              }),
+     *              
+     *              new RouteTest({
+     *                  output: new RouteTesterOutput({
+     *                      id: 2,
+     *                      name: "John",
+     *                      age: 34
+     *                  }, 200),
+     *                  body: { age: 34 },
+     *                  config: {
+     *                      headers: { apiKey: "exampleKey" }
+     *                  },
+     *                  params: {
+     *                      id: 2,
+     *                      name: "John"
+     *                  },
+     *                  querys: { name: "John" }
+     *              })
      *          ]
      *      );
-     *      
-     *      // defines bodys
-     *      routeTester.setBodys([
-     *          {
-     *              age: 56
-     *          },
-     *          {
-     *              age: 34
-     *          }
-     *      ]);
-     * 
-     *      // defines configs
-     *      routeTester.setConfigs([
-     *          {
-     *              Header: {
-     *                  apiKey: "exampleKey"
-     *              }
-     *          },
-     *          {
-     *              Header: {
-     *                  apiKey: "exampleKey"
-     *              }
-     *          }
-     *      ]);
-     * 
-     *      // defines params
-     *      routeTester.setParams([
-     *          {
-     *              id: 0,
-     *              name: "Jack"
-     *          },
-     *          {
-     *              id: 1,
-     *              name: "John"
-     *          }
-     *      ]);
-     * 
-     *      // defines querys
-     *      routeTester.setQuerys([
-     *          {
-     *              name: "Jack"
-     *          },
-     *          {
-     *              name: "John"
-     *          }
-     *      ]);
      * 
      *      routeTester.run();
      * 
@@ -292,28 +264,24 @@ class RouteTester extends Tester {
      * @param {String} description describes what the tester is testing
      * @param {String} url the url of the route that the tester is testing
      * @param {RouteTesterMethods} method the HTTP request method that the tester will make to the route
-     * @param {Array<RouteTesterOutput>} outputs an array of the expected response from the route for each test
+     * @param {RouteTest[]} tests an array of the expected response from the route for each test
      * 
      * @extends Tester
      */
-    constructor(name, description, url, method, outputs) {
-        validator.checkUndefinedArray([url, method, outputs], ["url", "method", "outputs"]);
-        validator.checkDataTypeArray([url, method], ["url", "method"], "string");
-
+    constructor(name, description, url, method, tests) {
         super(name, description);
 
+        // validates inputs
+        validator.checkUndefinedArray([url, method, tests], ["url", "method", "tests"]);
+        validator.checkDataTypeArray([url, method], ["url", "method"], "string");
         this.#checkHTTPMethod(method);
-        validator.checkIsArray(outputs, "outputs");
-        const outputNames = this.#createObjectNames("output", outputs.length);
-        validator.checkDataTypeArray(outputs, outputNames, "object");
-        validator.checkObjectStructureArray(outputs, outputNames, {
-            data: "*",
-            status: new Number
-        });
+        validator.checkIsArray(tests, "tests");
+        const testNames = this.#createObjectNames("test", tests.length);
+        validator.checkInstanceTypeArray(tests, testNames, "RouteTest");
 
         this.#url = url;
         this.#method = method;
-        this.#outputs = outputs;
+        this.#tests = tests;
     }
 
     /**
@@ -333,108 +301,24 @@ class RouteTester extends Tester {
     }
 
     /**
-     * Returns an array of the expected `outputs` of the tests.
-     * @returns {Array<RouteTesterOutput>} an array of the expected response from the route for each test
+     * Returns an array of route tests.
+     * @returns {RouteTest[]} an array of route tests
      */
-    getOutputs() {
-        return this.#outputs;
+    getTests() {
+        return this.#tests;
     }
 
     /**
-     * Returns the expected output for the test at specified `index`.
-     * @param {Int} index specifies which expected response to get from the array of outputs
-     * @returns {RouteTesterOutput} the expected response from the route from the test at the specified index
+     * Returns the route test in array of `tests` at specified `index`.
+     * @param {Int} index specifies which route test to get from the array of tests
+     * @returns {RouteTesterOutput} the route test at the specified index
      */
-    getOutput(index) {
+    getTest(index) {
         validator.checkUndefined(index, "index");
         validator.checkDataType(index, "index", "number");
-        validator.checkIndexRange(this.#outputs, "outputs", index);
+        validator.checkIndexRange(this.#tests, "tests", index);
 
-        return this.#outputs[index];
-    }
-
-    /**
-     * Returns an array of the bodys for each test.
-     * @returns {Array<object>} an array of objects that will be passed through the body for each test request
-     */
-    getBodys() {
-        return this.#bodys;
-    }
-
-    /**
-     * Returns the body for the test at specified `index`.
-     * @param {Int} index specifies which body to get from the array of bodys
-     * @returns {object} a object at the specified index that will be passed through the body during a test request
-     */
-    getBody(index) {
-        validator.checkUndefined(index, "index");
-        validator.checkDataType(index, "index", "number");
-        validator.checkIndexRange(this.#bodys, "bodys", index);
-
-        return this.#bodys[index];
-    }
-
-    /**
-     * Returns an array of the configs for each test.
-     * @returns {Array<AxiosRequestConfig>} an array of objects that will be passed through the configs for each test request
-     */
-    getConfigs() {
-        return this.#configs;
-    }
-
-    /**
-     * Returns the config for the test at specified `index`.
-     * @param {Int} index specifies which config to get from the array of configs
-     * @returns {AxiosRequestConfig} a object at the specified index that will be passed through the config during a test request
-     */
-    getConfig(index) {
-        validator.checkUndefined(index, "index");
-        validator.checkDataType(index, "index", "number");
-        validator.checkIndexRange(this.#configs, "configs", index);
-
-        return this.#configs[index];
-    }
-
-    /**
-     * Returns an array of the params for each test.
-     * @returns {Array<object>} an array of objects that will be passed through the params for each test request
-     */
-    getParams() {
-        return this.#params;
-    }
-
-    /**
-     * Returns the params for the test at specified `index`.
-     * @param {Int} index specifies which params to get from the array of params 
-     * @returns {object} a object at the specified index that will be passed through the params during a test request
-     */
-    getParam(index) {
-        validator.checkUndefined(index, "index");
-        validator.checkDataType(index, "index", "number");
-        validator.checkIndexRange(this.#params, "params", index);
-
-        return this.#params[index];
-    }
-
-    /**
-     * Returns an array of the querys for each test.
-     * @returns {Array<object>} an array of objects that will be passed through the querys for each test request
-     */
-    getQuerys() {
-        return this.#querys;
-    }
-
-    /**
-     * Returns the querys for the test at specified `index`.
-     * @param {Int} index specifies which querys to get from the array of querys
-     * @returns {object} a object at the specified index that will be passed through the querys during a test request
-     */
-    getQuery(index) {
-        validator.checkUndefined(index, "index");
-        validator.checkDataType(index, "index", "number");
-        validator.checkIndexRange(this.#querys, "querys", index);
-
-        return this.#querys[index];
+        return this.#tests[index];
     }
 
     /**
@@ -460,385 +344,53 @@ class RouteTester extends Tester {
     }
 
     /**
-     * Used to set an new array of expected `outputs` of each test.
-     * @param {Array<RouteTesterOutput>} newOutputs the new array of expected response from the route for each test
+     * Used to set an new array of route tests.
+     * @param {RouteTest[]} newTests the new array of route tests
      */
-    setOutputs(newOutputs) {
-        validator.checkUndefined(newOutputs, "newOutputs");
-        validator.checkIsArray(newOutputs, "newOutputs");
-        const outputNames = this.#createObjectNames("output", outputs.length);
-        validator.checkDataTypeArray(outputs, outputNames, "object");
-        validator.checkObjectStructureArray(outputs, outputNames, {
-            data: "*",
-            status: new Number
-        });
+    setTests(newTests) {
+        validator.checkUndefined(newTests, "newTests");
+        validator.checkIsArray(newTests, "newTests");
+        const testNames = this.#createObjectNames("test", newTests.length);
+        validator.checkInstanceTypeArray(test, testNames, "RouteTest");
 
-        this.#outputs = newOutputs;
+        this.#tests = newTests;
     }
 
     /**
-     * Used to set a new value of expected `output` at specified `index`.
-     * @param {Int} index specifies which expected response will be set a new value
-     * @param {RouteTesterOutput} newOutput the new expected response from the route for the test at the specified index
+     * Used to set a new route test at specified `index`.
+     * @param {Int} index specifies which route test will be set a new value
+     * @param {RouteTest} newTest the new route test at the specified index
      */
-    setOutput(index, newOutput) {
-        validator.checkUndefinedArray([index, newOutput], ["index", "newOutput"]);
+    setTest(index, newTest) {
+        validator.checkUndefinedArray([index, newTest], ["index", "newTest"]);
         validator.checkDataType(index, "index", "number");
-        validator.checkDataType(newOutput, "newOutput", "object");
-        validator.checkIndexRange(this.#outputs, "outputs", index);
-        validator.checkObjectStructure(newOutput, "newOutput", {
-            data: "*",
-            status: new Number
-        });
+        validator.checkInstanceType(newTest, "newTest", "RouteTest");
+        validator.checkIndexRange(this.#tests, "tests", index);
 
-        this.#outputs[index] = newOutput;
+        this.#tests[index] = newTest;
     }
 
     /**
-     * Used to add a new expected output to the array of expected `outputs`.
-     * @param {RouteTesterOutput} addedOutput the expected response that will be pushed to the end of the array of outputs
+     * Used to add a new route test to the array of `tests`.
+     * @param {RouteTest} test the route test that will be pushed to the end of the array of `tests`
      */
-    addOutput(addedOutput) {
-        validator.checkUndefined(addedOutput, "addedOutput");
-        this.#outputs.push(addedOutput);
+    addTest(test) {
+        validator.checkUndefined(test, "test");
+        validator.checkInstanceType(test, "test", "RouteTest");
+        this.#tests.push(test);
     }
 
     /**
-     * Used to remove a expected output from the array of expected `outputs` at the specified `index`.
-     * @param {Int} index specifies which expected response from the route will be removed from the array of outputs
-     * @returns {RouteTesterOutput} the expected response from the route that was removed from the array of outputs
+     * Used to remove a route test from the array of `tests` at the specified `index`.
+     * @param {Int} index specifies which route test will be removed from the array of `tests`
+     * @returns {RouteTest} the route test that was removed from the array of `tests`
      */
-    removeOutput(index) {
+    removeTest(index) {
         validator.checkUndefined(index, "index");
         validator.checkDataType(index, "index", "number");
-        validator.checkIndexRange(this.#outputs, "outputs", index);
+        validator.checkIndexRange(this.#tests, "tests", index);
         
-        return this.#outputs.splice(index, 1)[0];
-    }
-
-    /**
-     * Used to set a new array of `bodys` for each test.
-     * @param {Array<object>} newBodys the new array of objects that will be passed through the body for each test request
-     */
-    setBodys(newBodys) {
-        validator.checkUndefined(newBodys, "newBodys");
-        validator.checkIsArray(newBodys, "newBodys");
-        const bodyNames = this.#createObjectNames("Body", newBodys.length);
-        validator.checkDataTypeArray(newBodys, bodyNames, "object");
-        
-        this.#bodys = newBodys;
-    }
-
-    /**
-     * Used to set a new value of `body` at specified `index`.
-     * @param {Int} index specifies which object in the array of bodys will have a new value set
-     * @param {object} newBody the new object that will be passed through the body during a test request at the specified index
-     */
-    setBody(index, newBody) {
-        validator.checkUndefinedArray([index, newBody], ["index", "newBody"]);
-        validator.checkDataType(index, "index", "number");
-        validator.checkDataType(newBody, "newBody", "object");
-        validator.checkIndexRange(this.#bodys, "bodys", index);
-
-        this.#bodys[index] = newBody;
-    }
-
-    /**
-     * Used to add a new `body` to the array of `bodys`.
-     * @param {object} addedBody a object that will be pushed to the end of the array of bodys
-     */
-    addBody(addedBody) {
-        validator.checkUndefined(addedBody, "addedBody");
-        validator.checkDataType(addedBody, "addedBody", "object");
-        this.#bodys.push(addedBody);
-    }
-
-    /**
-     * Used to add properties to the `body` at the specified `index`.
-     * @param {Int} index specifies which object in the array of bodys will recieve the added properties
-     * @param {object} addedProperties a object that defines properties that will be added to an existing object at the specified index
-     */
-    addBodyProperties(index, addedProperties) {
-        validator.checkUndefinedArray([index, addedProperties], ["index", "addedProperties"]);
-        validator.checkDataType(index, "index", "number");
-        validator.checkDataType(addedProperties, "addedProperties", "object");
-        validator.checkIndexRange(this.#bodys, "bodys", index);
-
-        // adds properties to body object in array
-        this.#bodys[index] = this.#combineObjects(this.#bodys[index], addedProperties);
-    }
-
-    /**
-     * Used to remove a `body` at the specified `index`.
-     * @param {Int} index specifies which object will be removed from the array of bodys
-     * @returns {object} the object that was removed from the array of bodys
-     */
-    removeBody(index) {
-        validator.checkUndefined(index, "index");
-        validator.checkDataType(index, "index", "number");
-        validator.checkIndexRange(this.#bodys, "bodys", index);
-
-        return this.#bodys.splice(index, 1)[0];
-    }
-
-    /**
-     * Used to remove a property from a `body` at the specified `index`.
-     * @param {Int} index specifies which object in the array of bodys will have a property removed 
-     * @param {String} key specifies which property to be removed
-     * @returns {object} a object with the property that was removed
-     */
-    removeBodyProperty(index, key) {
-        validator.checkUndefinedArray([index, key], ["index", "key"]);
-        validator.checkDataType(index, "index", "number");
-        validator.checkDataType(key, "key", "string");
-        validator.checkIndexRange(this.#bodys, "bodys", index);
-
-        // saves property into variable so that it can be return after it is delete from the original object
-        const removedProperty = {
-            [key]: this.#bodys[index][key]
-        }
-
-        // deletes the property from the object at an index in array
-        delete this.#bodys[index][key];
-
-        return removedProperty;
-    }
-
-    /**
-     * Used to set a new array of `configs` for each test.
-     * @param {Array<AxiosRequestConfig>} newConfigs a new array of objects that are passed through the config for each test request
-     */
-    setConfigs(newConfigs) {
-        validator.checkUndefined(newConfigs, "newConfigs");
-        validator.checkIsArray(newConfigs, "newConfigs");
-        const configNames = this.#createObjectNames("Config", newConfigs.length);
-        validator.checkDataTypeArray(newConfigs, configNames, "object");
-        
-        this.#configs = newConfigs;
-    }
-
-    /**
-     * Used to set a new value of `config` at the specified `index`.
-     * @param {Int} index specifies which config in the array of configs will have a new value set
-     * @param {AxiosRequestConfig} newConfig the new value that is set at the specified index of the configs array
-     */
-    setConfig(index, newConfig) {
-        validator.checkUndefinedArray([index, newConfig], ["index", "newCofig"]);
-        validator.checkDataType(index, "index", "number");
-        validator.checkDataType(newConfig, "newConfig", "object");
-        validator.checkIndexRange(this.#configs, "configs", index);
-
-        this.#configs[index] = newConfig;
-    }
-
-    /**
-     * Used to add a new `config` to the array of `configs`.
-     * @param {AxiosRequestConfig} addedConfig the new object that is pushed to the end of the array of configs
-     */
-    addConfig(addedConfig) {
-        validator.checkUndefined(addedConfig, "addedConfig");
-        validator.checkDataType(addedConfig, "addedConfig", "object");
-        this.#configs.push(addedConfig);
-    }
-
-    /**
-     * Used to remove a `config` at the specified `index`.
-     * @param {Int} index specifies which object is removed from the array of configs
-     * @returns {AxiosRequestConfig} the object that was removed from the array of configs
-     */
-    removeConfig(index) {
-        validator.checkUndefined(index, "index");
-        validator.checkDataType(index, "index", "number");
-        validator.checkIndexRange(this.#configs, "configs", index);
-
-        return this.#configs.splice(index, 1)[0];
-    }
-
-    /**
-     * Used to set a new value for the array of `params`.
-     * @param {Array<object>} newParams a new array of objects that are passed through the params for each test request
-     */
-    setParams(newParams) {
-        validator.checkUndefined(newParams, "newParams");
-        validator.checkIsArray(newParams, "newParams");
-        const paramNames = this.#createObjectNames("Params", newParams.length);
-        validator.checkDataTypeArray(newParams, paramNames, "object");
-        
-        this.#params = newParams;
-    }
-
-    /**
-     * Used to set a new value for `params` at the specified `index`.
-     * @param {Int} index specifies which object in the array of params will have a new value set
-     * @param {object} newParam the new value that will be set to the specified index of the params array
-     */
-    setParam(index, newParam) {
-        validator.checkUndefinedArray([index, newParam], ["index", "newParam"]);
-        validator.checkDataType(index, "index", "number");
-        validator.checkDataType(newParam, "newParam", "object");
-        validator.checkIndexRange(this.#params, "params", index);
-
-        this.#params[index] = newParam;
-    }
-
-    /**
-     * Used to add new `params` to the array of `params`.
-     * @param {object} addedParams a object that will be pushed to the end of the params array
-     */
-    addParams(addedParams) {
-        validator.checkUndefined(addedParams, "addedParams");
-        validator.checkDataType(addedParams, "addedParams", "object");
-        this.#params.push(addedParams);
-    }
-
-    /**
-     * Used to add properties to `params` at the specified `index`.
-     * @param {Int} index specifies which object in the params array will recieve the added properties 
-     * @param {object} addedProperties a object of the properties that will be combined with the existing object at the specified index
-     */
-    addParamProperties(index, addedProperties) {
-        validator.checkUndefinedArray([index, addedProperties], ["index", "addedProperties"]);
-        validator.checkDataType(index, "index", "number");
-        validator.checkDataType(addedProperties, "addedProperties", "object");
-        validator.checkIndexRange(this.#params, "params", index);
-
-        this.#params[index] = this.#combineObjects(this.#params[index], addedProperties);
-    }
-
-    /**
-     * Used to remove `params` at the specified `index`.
-     * @param {Int} index specifies which object in the params array will be removed
-     * @returns {object} the object that was removed from the params array
-     */
-    removeParams(index) {
-        validator.checkUndefined(index, "index");
-        validator.checkDataType(index, "index", "number");
-        validator.checkIndexRange(this.#params, "params", index);
-
-        return this.#params.splice(index, 1)[0];
-    }
-
-    /**
-     * Used to remove property from `params` at the specified `index`.
-     * @param {Int} index specifies which object in the params array will have the property removed from
-     * @param {String} key specifies which property that will be removed from the object
-     * @returns {object} a object with the property that was removed
-     */
-    removeParamProperty(index, key) {
-        validator.checkUndefinedArray([index, key], ["index", "key"]);
-        validator.checkDataType(index, "index", "number");
-        validator.checkDataType(key, "key", "string");
-        validator.checkIndexRange(this.#params, "params", index);
-
-        // saves property into variable so that it can be return after it is delete from the original object
-        const removedProperty = {
-            [key]: this.#params[index][key]
-        }
-
-        // deletes the property from the object
-        delete this.#params[index][key];
-
-        return removedProperty;
-    }
-
-    /**
-     * Used to set a new array of `querys` for each test.
-     * @param {Array<object>} newQuerys a new array of objects that will be passed through the querys for each test request
-     */
-    setQuerys(newQuerys) {
-        validator.checkUndefined(newQuerys, "newQuerys");
-        validator.checkIsArray(newQuerys, "newQuerys");
-        const queryNames = this.#createObjectNames("Querys", newQuerys.length);
-        validator.checkDataTypeArray(newQuerys, queryNames, "object");
-
-        this.#querys = newQuerys;
-    }
-
-    /**
-     * Used to set a new value of `querys` at the specified `index`.
-     * @param {Int} index specifies which object in the querys array will have a new value set
-     * @param {object} newQuery the new value that will be set at the specified index in the querys array
-     */
-    setQuery(index, newQuery) {
-        validator.checkUndefinedArray([index, newQuery], ["index", "newQuery"]);
-        validator.checkDataType(index, "index", "number");
-        validator.checkDataType(newQuery, "newQuery", "object");
-        validator.checkIndexRange(this.#querys, "querys", index);
-
-        this.#querys[index] = newQuery;
-    }
-
-    /**
-     * Used to add `querys` to the array of `querys`.
-     * @param {object} addedQuery a object that will be pushed to the end of the querys array
-     */
-    addQuery(addedQuery) {
-        validator.checkUndefined(addedQuery, "addedQuery");
-        validator.checkDataType(addedQuery, "addedQuery", "object");
-        this.#querys.push(addedQuery);
-    }
-
-    /**
-     * Used to add properties to the `querys` at the specified `index`.
-     * @param {Int} index specifies which object in the querys array will recieve the added properties
-     * @param {object} addedProperties a object with properties that will be combined to an existing object at the specified index
-     */
-    addQueryProperties(index, addedProperties) {
-        validator.checkUndefinedArray([index, addedProperties], ["index", "addedProperties"]);
-        validator.checkDataType(index, "index", "number");
-        validator.checkDataType(addedProperties, "addedProperties", "object");
-        validator.checkIndexRange(this.#querys, "querys", index);
-
-        this.#querys[index] = this.#combineObjects(this.#querys[index], addedProperties);
-    }
-
-    /**
-     * Used to remove `querys` at the specified `index`.
-     * @param {Int} index specifies which object in the querys array that will be removed
-     * @returns {object} the object that was removed from the querys array
-     */
-    removeQuery(index) {
-        validator.checkUndefined(index, "index");
-        validator.checkDataType(index, "index", "number");
-        validator.checkIndexRange(this.#querys, "querys", index);
-
-        return this.#querys.splice(index, 1)[0];
-    }
-
-    /**
-     * Used to remove a property from `querys` at the specified `index`.
-     * @param {Int} index specifies which object in the querys array will have the property removed from
-     * @param {String} key specifies which property that will be removed
-     * @returns {object} a object with the property that was removed
-     */
-    removeQueryProperty(index, key) {
-        validator.checkUndefinedArray([index, key], ["index", "key"]);
-        validator.checkDataType(index, "index", "number");
-        validator.checkDataType(key, "key", "string");
-        validator.checkIndexRange(this.#querys, "querys", index);
-
-        // saves property into variable so that it can be return after it is delete from the original object
-        const removedProperty = {
-            [key]: this.#querys[index][key]
-        }
-
-        // deletes the property from the object
-        delete this.#querys[index][key];
-
-        return removedProperty;
-    }
-
-    /**
-     * Combines `object1` and `object2` and returns the combination of the two objects.
-     * @param {object} object1 
-     * @param {object} object2 
-     * @returns {object} the combination of object1 and object2
-     */
-    #combineObjects(object1, object2) {
-        return {
-            ...object1,
-            ...object2
-        }
+        return this.#tests.splice(index, 1)[0];
     }
 
     /**
@@ -930,18 +482,19 @@ class RouteTester extends Tester {
         console.log(`\nRunning ${this.getName()} used to ${this.getDescription()}:`);
         
         // loops through each test
-        for (let i = 0; i < this.#outputs.length; i++) {
+        for (let i = 0; i < this.#tests.length; i++) {
 
             let requestURL = this.#url;
+            const currentTest = this.#tests[i];
 
             // checks if there are params
-            if (this.#params[i] !== undefined && Object.keys(this.#params[i]).length > 0) {
-                requestURL  = this.#replaceParamPlaceHolders(requestURL, this.#params[i]);
+            if (Object.keys(currentTest.params).length > 0) {
+                requestURL  = this.#replaceParamPlaceHolders(requestURL, currentTest.params);
             }
 
-            // checks if there are query
-            if (this.#querys[i] !== undefined && Object.keys(this.#querys[i]).length > 0) {
-                requestURL = this.#intergrateQueryURL(requestURL, this.#querys[i]);
+            // checks if there are querys
+            if (Object.keys(currentTest.querys).length > 0) {
+                requestURL = this.#intergrateQueryURL(requestURL, currentTest.querys);
             }
 
             // makes test request
@@ -951,14 +504,14 @@ class RouteTester extends Tester {
             // checks if it is a get or delete request 
             // this is done as the get and delete requests don't have a data argument
             if (this.#method === "get" || this.#method === "delete") {
-                response = await axios[this.#method](requestURL, this.#configs[i] || undefined);
+                response = await axios[this.#method](requestURL, currentTest.config);
 
             } else {
-                response = await axios[this.#method](requestURL, this.#bodys[i] || {}, this.#configs[i] || undefined);
+                response = await axios[this.#method](requestURL, currentTest.body, currentTest.config);
             }
 
             const { data, status } = response;
-            const { data: expectedData, status: expectedStatus } = this.#outputs[i];
+            const { data: expectedData, status: expectedStatus } = currentTest.output;
 
             // checks if the actual output was equal to the expected output
             if (
@@ -984,7 +537,7 @@ class RouteTester extends Tester {
             }
 
             // calculates and logs duration of route
-            if (i === this.#outputs.length - 1) {
+            if (i === this.#tests.length - 1) {
                 const endTime = new Date().getTime();
                 console.log("   - Duration: " + (endTime - startTime) + "ms");
             }
@@ -994,6 +547,7 @@ class RouteTester extends Tester {
 
 export {
     RouteTester as default,
+    RouteTest,
     RouteTesterOutput,
     RouteTesterMethods
 }

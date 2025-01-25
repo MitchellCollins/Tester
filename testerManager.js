@@ -1,6 +1,6 @@
 import validator from "@mitchell-collins/validator";
 import { FunctionTesterSample } from "./Testers/FunctionTester.js";
-import RouteTester, { RouteTesterOutput, RouteTesterMethods } from "./Testers/RouteTester.js";
+import RouteTester, { RouteTesterMethods, RouteTest } from "./Testers/RouteTester.js";
 import ReturnTester from "./Testers/ReturnTester.js";
 import LogTester, { logTestMapper } from "./Testers/LogTester.js";
 
@@ -68,18 +68,16 @@ import LogTester, { logTestMapper } from "./Testers/LogTester.js";
  *          "http://localhost:4000/name/:id",
  *          RouteTesterMethods.GET,
  *          [
- *              new RouteTesterOutput({ name: "Jack" }, 200),
- *              new RouteTesterOutput({ name: "John" }, 200)
+ *              new RouteTest({
+ *                  output: new RouteTesterOutput({ name: "Jack" }, 200),
+ *                  params: { id: 1 }
+ *              }),
+ *              new RouteTest({
+ *                  output: new RouteTesterOutput({ name: "John" }, 200),
+ *                  params: { id: 2 }
+ *              })
  *          ]
  *      );
- *      testerManager.testers["IdChecker"].setParams([
- *          {
- *              id: 1
- *          },
- *          {
- *              id: 2
- *          }
- *      ]);
  * 
  *      await testerManager.run();
  */
@@ -95,10 +93,10 @@ const testerManager = {
      * @param {String} description a description of what the tester tests
      * @param {String} url the url of the route thet tester is testing
      * @param {RouteTesterMethods} method the http request method the tester makes to the route
-     * @param {RouteTesterOutput[]} output an array of the expected response from the route for each test
+     * @param {RouteTest[]} tests an array of the route tests
      */
-    createRouteTester: function (name, description, url, method, output) {
-        this.push(new RouteTester(name, description, url, method, output));        
+    createRouteTester: function (name, description, url, method, tests) {
+        this.push(new RouteTester(name, description, url, method, tests));        
     },
 
     /**
