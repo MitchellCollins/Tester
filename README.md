@@ -50,22 +50,21 @@ testerManager.createRouteTester(
     "example.url/name/:id",
     RouteTesterMethods.GET,
     [
-        new RouteTesterOutput({ name: "Jack" } 200),
-        new RouteTesterOutput({ name: "John" }, 200),
-        new RouteTesterOutput({ name: "Ben" }, 200)
+        new RouteTest({
+            output: new RouteTesterOutput({ name: "Jack" } 200),
+            params: { id: 1 }
+        }),
+        new RouteTest({
+            output: new RouteTesterOutput({ name: "John" }, 200),
+            params: { id: 2 }
+        }),
+        new RouteTest({
+            output: new RouteTesterOutput({ name: "Ben" }, 200),
+            params: { id: 3 }
+        })
+        
     ]
 );
-testerManager.testers["RouteIDTester"].setParams([
-    {
-        id: 1
-    },
-    {
-        id: 2
-    },
-    {
-        id: 3
-    }
-]);
 
 testerManager.run();
 ```
@@ -76,6 +75,7 @@ testerManager.run();
 - `FunctionTester`
 - `FunctionTesterSample`
 - `RouteTester`
+- `RouteTest`
 - `RouteTesterMethods`
 - `RouteTesterOutput`
 - `HttpStatusCode`
