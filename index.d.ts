@@ -1,4 +1,4 @@
-import { AxiosRequestConfig, HttpStatusCode } from "axios"
+import { AxiosRequestConfig, HttpStatusCode } from "axios";
 
 export {
     AxiosRequestConfig,
@@ -433,7 +433,7 @@ export type RouteTest = {
     output: RouteTesterOutput,
     body?: object | null,
     config?: AxiosRequestConfig<any> | null,
-    param?: object | null,
+    params?: object | null,
     querys?: object | null
 }
 

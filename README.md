@@ -12,9 +12,36 @@ The are multiply different testers these include:
 - `ReturnTester` - is a child class of `FunctionTester`, used to test functions that return a output
 - `LogTester` - is a child class of `FunctionTester`, used to test functions that log an output to the console
 - `RouteTester` - is used to test a route of a server
+- `TesterManager` - is used to manager your testers
 
-## testerManager
-The `testerManager` is used to manage all your testers. All the testers are stored into a object that is looped through to run each tester.
+## TesterManager
+A `TesterManager` is already constructor and exported as default and is used to manage all your testers. All the testers are stored into a object that is looped through to run each tester. The `TesterManager` is also exported which allows you to create multiple `TesterManager`s.
+
+## Types
+```Typescript 
+type FunctionTesterSample = {
+    inputs: any[],
+    output: any
+}
+```
+```Typescript
+type RouteTesterOutput = {
+    data: any,
+    status: HttpStatusCode
+}
+```
+```Typescript
+type RouteTesterMethods = "get" | "post" | "put" | "patch" | "delete";
+```
+```Typescript
+type RouteTest = {
+    output: RouteTesterOutput,
+    body?: object | null,
+    config?: AxiosRequestConfig<any> | null,
+    params?: object | null,
+    querys?: object | null
+}
+```
 
 ## Example
 ```JavaScript
@@ -25,9 +52,18 @@ testerManager.createReturnTester(
         return num1 + num2;
     },
     [
-        new FunctionTesterSample([2, 5], 7),
-        new FunctionTesterSample([7, 3], 10),
-        new FnctionTesterSample([12, 7], 19)
+        {
+            inputs: [2, 5], 
+            output: 7
+        },
+        {
+            inputs: [7, 3], 
+            output: 10
+        },
+        {
+            inputs: [12, 7], 
+            output: 19
+        }
     ]
 );
 
@@ -38,9 +74,18 @@ testerManager.createLogTester(
         console.log(num1 - num2);
     },
     [
-        new FunctionTesterSample([3, 1], 2),
-        new FunctionTesterSample([7, 4], 3),
-        new FunctionTesterSample([10, 5], 5)
+        {
+            inputs: [3, 1], 
+            output: 2
+        },
+        {
+            inputs: [7, 4], 
+            output: 3
+        },
+        {
+            inputs: [10, 5], 
+            output: 5
+        }
     ]
 );
 
@@ -50,19 +95,33 @@ testerManager.createRouteTester(
     "example.url/name/:id",
     RouteTesterMethods.GET,
     [
-        new RouteTest({
-            output: new RouteTesterOutput({ name: "Jack" } 200),
+        {
+            output: { 
+                data: { 
+                    name: "Jack"
+                },
+                status: 200
+            },
             params: { id: 1 }
-        }),
-        new RouteTest({
-            output: new RouteTesterOutput({ name: "John" }, 200),
+        },
+        {
+            output: { 
+                data: {
+                    name: "John" 
+                },
+                status: 200
+            },
             params: { id: 2 }
-        }),
-        new RouteTest({
-            output: new RouteTesterOutput({ name: "Ben" }, 200),
+        },
+        {
+            output: { 
+                data: {
+                    name: "Ben" 
+                },
+                status: 200
+            },
             params: { id: 3 }
-        })
-        
+        }
     ]
 );
 
@@ -71,6 +130,7 @@ testerManager.run();
 
 ## Exports
 - `testerManager` as default
+- `TesterManager`
 - `Tester`
 - `FunctionTester`
 - `FunctionTesterSample`
@@ -79,6 +139,7 @@ testerManager.run();
 - `RouteTesterMethods`
 - `RouteTesterOutput`
 - `HttpStatusCode`
+- `AxiosRequestConfig`
 - `LogTester`
 - `ReturnTester`
 
