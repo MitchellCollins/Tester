@@ -1,21 +1,18 @@
-import { HttpStatusCode } from "axios";
 import Tester from "./Testers/Tester.js";
-import FunctionTester, { FunctionTesterSample } from "./Testers/FunctionTester.js";
-import RouteTester, { RouteTest, RouteTesterMethods, RouteTesterOutput } from "./Testers/RouteTester.js";
+import FunctionTester from "./Testers/FunctionTester.js";
+import RouteTester from "./Testers/RouteTester.js";
 import LogTester from "./Testers/LogTester.js";
 import ReturnTester from "./Testers/ReturnTester.js";
-import testerManager from "./testerManager.js";
+import TesterManager from "./TesterManager.js";
+
+const testerManager = new TesterManager();
 
 export {
     testerManager as default,
+    TesterManager,
     Tester,
     FunctionTester,
-    FunctionTesterSample,
     RouteTester,
-    RouteTest,
-    RouteTesterMethods,
-    RouteTesterOutput,
-    HttpStatusCode,
     LogTester,
     ReturnTester
 }

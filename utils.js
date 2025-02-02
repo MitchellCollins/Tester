@@ -39,8 +39,26 @@ function validateDefinedObject(object, objectName) {
         validator.checkDataType(object, objectName, "object");
 }
 
+/**
+ * Used to define an array of names for each element of an array.
+ * @param {String} name the name of the array argument that the elements are in
+ * @param {Int} arrayLength specifies how many names to create
+ * @returns {String[]} an array of names for each element
+ */
+function defineElementNames(name, arrayLength) {
+    // creates an array of names for each sample inputs and outputs
+    let names = [];
+
+    for (let i = 0; i < arrayLength; i++) {
+        names.push(`${name}[${i}]`);
+    }
+
+    return names;
+}
+
 export {
     arraysEqual,
     jsonsEqual,
-    validateDefinedObject
+    validateDefinedObject,
+    defineElementNames
 }
