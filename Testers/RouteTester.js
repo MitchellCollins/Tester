@@ -1,182 +1,9 @@
-import axios, { HttpStatusCode } from "axios";
+import axios from "axios";
 import validator from "@mitchell-collins/validator";
 import Tester from "./Tester.js";
-import { arraysEqual, jsonsEqual, validateDefinedObject } from "../utils.js";
+import { arraysEqual, jsonsEqual, validateDefinedObject } from "../utils.js"; 
 
-/**
- * The `RouteTesterMethods` is an object that defines the methods that an instance of the `RouteTester` constructor is able to make to
- * a route for testing.
- * 
- * @typedef {object} RouteTesterMethods
- * @property {"get"} Get - the get request method
- * @property {"post"} POST - the post request method
- * @property {"patch"} PATCH - the patch request method
- * @property {"put"} PUT - the put request method
- * @property {"delete"} DELETE - the delete request method
- */
-const RouteTesterMethods = {
-    GET: "get",
-    POST: "post",
-    PATCH: "patch",
-    PUT: "put",
-    DELETE: "delete"
-};
-
-/**
- * The `RouteTesterOutput` is an object that is used to define the expected output that is returned from a route that is tested
- * by an instance of the `RouteTester` constructor. The expected output is defined and is compared against the actual output returned 
- * by the tester to determine if the route pasted the test. 
- * 
- * There are two key information that is checked to determine if the route works as it is intended to do, these information include:
- * - data - the expected data that the route response with to the request
- * - status - the expected status of the response
- * 
- * The `data` property can have the value of anything, but the `status` property must have a value of `HttpStatusCode`.
- * 
- * ```
- * RouteTesterOutput = {
- *  data: *,
- *  status: HttpStatusCode
- * }
- * ```
- * 
- * @param {*} data the expected data that the route response with to the request
- * @param {HttpStatusCode} status the expected status of the response
- * @returns {RouteTesterOutput} an object that is used to define the expected output that is returned from a route that is tested by an instance of the `RouteTester` constructor
- */
-function RouteTesterOutput(data, status) {
-    validator.checkUndefinedArray([data, status], ["data", "status"]);
-    validator.checkDataType(status, "status", "number");
-    validator.checkIsHttpStatusCode(status, "status");
-    
-    this.data = data;
-    this.status = status;
-}
-
-/**
- * The `RouteTest` is an object that defines various information that is used to test a route by a instance of the `RouteTester`
- * constructor.
- * 
- * The information that it defines include:
- * - `output` - the expected output from the tested route
- * - `body` - a object that is passed through the body during a request to the route
- * - `config` - a object that is passed through the config during a request to the route
- * - `querys` - a object that is passed through the querys during a request to the route
- * - `params` - a object that is passed through the params during a request to the route
- * 
- * ```
- * RouteTest = {
- *      output: {
- *          data: *,
- *          status: HttpStatusCode
- *      },
- *      body?: {...}
- *      config?: {...}
- *      querys?: {...}
- *      params?: {...}
- * }
- * ```
- * 
- * @param {object} data information that is used to test a route
- * @param {RouteTesterOutput} data.output the expected output from the tested route
- * @param {object | undefined | null} [data.body] a object that is passed through the body during a request to the route
- * @param {import("axios").AxiosRequestConfig | undefined | null} [data.config] a object that is passed through the config during a request to the route
- * @param {object | undefined | null} [data.querys] a object that is passed through the querys during a request to the route
- * @param {object | undefined | null} [data.params] a object that is passed through the param paths during a request to the route
- * @returns {RouteTest} a object with information that is used to test a route
- */
-function RouteTest(data) {
-    validator.checkUndefined(data, "data");
-    validator.checkDataType(data, "data", "object");
-
-    const { output, body, config, querys, params } = data;
-
-    validator.checkUndefined(output, "output");
-    validator.checkInstanceType(output, "output", "RouteTesterOutput");
-
-    // validates variables if they are defined
-    validateDefinedObject(body, "body");
-    validateDefinedObject(config, "config");
-    validateDefinedObject(querys, "querys");
-    validateDefinedObject(params, "params");
-
-    this.output = output;
-    this.body = body === undefined || body === null ? {} : body;
-    this.config = config === undefined || config === null ? {} : config;
-    this.querys = querys === undefined || querys === null ? {} : querys;
-    this.params = params === undefined || params === null ? {} : params;
-}
-
-/**
- * The `RouteTester` constructor is used to create objects that can run tests on a route of
- * a server. It has an array of tests that are instances of the `RouteTest` that are used to test a route.
- * 
- * The `RouteTester` is a child class of the `Tester` class that defined the attributes:
- * - `name` - the name of the tester
- * - `description` - a description of what the tester tests
- * 
- * The `RouteTester` defines the attributes:
- * - `url` - the url of the route the tester is testing
- * - `method` - the HTTP request method 
- * - `tests` - an array of route tests
- * 
- * The `RouteTester` defines the methods:
- * - getter methods
- * - setter methods
- * - run - which runs the tests on the route
- * 
- * When constructing a `RouteTester` you define the attributes `name`, `description`,
- * `url`, `method` and `tests`.
- * 
- * @example
- * 
- *      const routeTester = new RouteTester(
- *          "Route Tester", 
- *          "Tests the route",
- *          "http://example.url.com/:id/:name",
- *          RouteTesterMethods.GET,
- *          [
- *              new RouteTest({ 
- *                  output: new RouteTesterOutput({ 
- *                      id: 1,
- *                      name: "Jack",
- *                      age: 56
- *                  }, 200),
- *                  body: { age: 56 },
- *                  config: { 
- *                      headers: { apiKey: "exampleKey" }
- *                  },
- *                  params: { 
- *                      id: 1,
- *                      name: "Jack"
- *                  },
- *                  querys: { name: "Jack" }
- *              }),
- *              
- *              new RouteTest({
- *                  output: new RouteTesterOutput({
- *                      id: 2,
- *                      name: "John",
- *                      age: 34
- *                  }, 200),
- *                  body: { age: 34 },
- *                  config: {
- *                      headers: { apiKey: "exampleKey" }
- *                  },
- *                  params: {
- *                      id: 2,
- *                      name: "John"
- *                  },
- *                  querys: { name: "John" }
- *              })
- *          ]
- *      );
- * 
- *      routeTester.run();
- * 
- * @extends Tester
- */
-class RouteTester extends Tester {
+export default class RouteTester extends Tester {
 
     /**
      * The `url` of the route that is being tested.
@@ -191,83 +18,8 @@ class RouteTester extends Tester {
     /**
      * An array of route tests.
      */
-    #tests;
+    #tests = [];
     
-    /**
-     * The `RouteTester` constructor is used to create objects that can run tests on a route of
-     * a server. It has an array of tests that are instances of the `RouteTest` that are used to test a route.
-     * 
-     * The `RouteTester` is a child class of the `Tester` class that defined the attributes:
-     * - `name` - the name of the tester
-     * - `description` - a description of what the tester tests
-     * 
-     * The `RouteTester` defines the attributes:
-     * - `url` - the url of the route the tester is testing
-     * - `method` - the HTTP request method 
-     * - `tests` - an array of route tests
-     * 
-     * The `RouteTester` defines the methods:
-     * - getter methods
-     * - setter methods
-     * - run - which runs the tests on the route
-     * 
-     * When constructing a `RouteTester` you define the attributes `name`, `description`,
-     * `url`, `method` and `tests`.
-     * 
-     * @example
-     * 
-     *      const routeTester = new RouteTester(
-     *          "Route Tester", 
-     *          "Tests the route",
-     *          "http://example.url.com/:id/:name",
-     *          RouteTesterMethods.GET,
-     *          [
-     *              new RouteTest({ 
-     *                  output: new RouteTesterOutput({ 
-     *                      id: 1,
-     *                      name: "Jack",
-     *                      age: 56
-     *                  }, 200),
-     *                  body: { age: 56 },
-     *                  config: { 
-     *                      headers: { apiKey: "exampleKey" }
-     *                  },
-     *                  params: { 
-     *                      id: 1,
-     *                      name: "Jack"
-     *                  },
-     *                  querys: { name: "Jack" }
-     *              }),
-     *              
-     *              new RouteTest({
-     *                  output: new RouteTesterOutput({
-     *                      id: 2,
-     *                      name: "John",
-     *                      age: 34
-     *                  }, 200),
-     *                  body: { age: 34 },
-     *                  config: {
-     *                      headers: { apiKey: "exampleKey" }
-     *                  },
-     *                  params: {
-     *                      id: 2,
-     *                      name: "John"
-     *                  },
-     *                  querys: { name: "John" }
-     *              })
-     *          ]
-     *      );
-     * 
-     *      routeTester.run();
-     * 
-     * @param {String} name a name given to the tester for identication
-     * @param {String} description describes what the tester is testing
-     * @param {String} url the url of the route that the tester is testing
-     * @param {RouteTesterMethods} method the HTTP request method that the tester will make to the route
-     * @param {RouteTest[]} tests an array of the expected response from the route for each test
-     * 
-     * @extends Tester
-     */
     constructor(name, description, url, method, tests) {
         super(name, description);
 
@@ -276,43 +28,43 @@ class RouteTester extends Tester {
         validator.checkDataTypeArray([url, method], ["url", "method"], "string");
         this.#checkHTTPMethod(method);
         validator.checkIsArray(tests, "tests");
-        const testNames = this.#createObjectNames("test", tests.length);
-        validator.checkInstanceTypeArray(tests, testNames, "RouteTest");
+
+        this.#checkIsRouteTests(tests, "tests");
 
         this.#url = url;
         this.#method = method;
-        this.#tests = tests;
+    
+        // gives the tests properties a default value of {} if undefined or null
+        for (let i = 0; i < tests.length; i++) {
+            let { output, body, config, params, querys } = tests[i];
+
+            body = body === undefined || body === null ? {} : body;
+            config = config === undefined || config === null ? {} : config;
+            params = params === undefined || params === null ? {} : params;
+            querys = querys === undefined || querys === null ? {} : querys;
+
+            this.#tests.push({
+                output: output,
+                body: body,
+                config: config,
+                params: params,
+                querys: querys
+            });
+        }
     }
 
-    /**
-     * Returns the `url` that is being tested.
-     * @returns {String} the url of the route that the tester is testing
-     */
     getURL() {
         return this.#url;
     }
 
-    /**
-     * Returns the HTTP request `method`.
-     * @returns {RouteTesterMethods} the HTTP request method that the tester will make to the route
-     */
     getMethod() {
         return this.#method;
     }
 
-    /**
-     * Returns an array of route tests.
-     * @returns {RouteTest[]} an array of route tests
-     */
     getTests() {
         return this.#tests;
     }
 
-    /**
-     * Returns the route test in array of `tests` at specified `index`.
-     * @param {Int} index specifies which route test to get from the array of tests
-     * @returns {RouteTesterOutput} the route test at the specified index
-     */
     getTest(index) {
         validator.checkUndefined(index, "index");
         validator.checkDataType(index, "index", "number");
@@ -321,70 +73,43 @@ class RouteTester extends Tester {
         return this.#tests[index];
     }
 
-    /**
-     * Sets a new `url` that is going to be tested.
-     * @param {String} newURL the new url of the route that will be tested by the tester
-     */
     setURL(newURL) {
-        validator.checkUndefined(url, "url");
-        validator.checkDataType(url, "url", "string");
+        validator.checkUndefined(newURL, "newURL");
+        validator.checkDataType(newURL, "newURL", "string");
         this.#url = newURL;
     }
 
-    /**
-     * Sets a new HTTP request `method` for the test. 
-     * @param {RouteTesterMethods} newMethod the new HTTP request method that the tester will make to the route
-     */
     setMethod(newMethod) {
         validator.checkUndefined(newMethod, "newMethod");
         validator.checkDataType(newMethod, "newMethod", "string");
-        this.#checkHTTPMethod(method);
+        this.#checkHTTPMethod(newMethod);
 
         this.#method = newMethod;
     }
 
-    /**
-     * Used to set an new array of route tests.
-     * @param {RouteTest[]} newTests the new array of route tests
-     */
     setTests(newTests) {
         validator.checkUndefined(newTests, "newTests");
         validator.checkIsArray(newTests, "newTests");
-        const testNames = this.#createObjectNames("test", newTests.length);
-        validator.checkInstanceTypeArray(test, testNames, "RouteTest");
+        this.#checkIsRouteTests(newTests, "newTests");
 
         this.#tests = newTests;
     }
 
-    /**
-     * Used to set a new route test at specified `index`.
-     * @param {Int} index specifies which route test will be set a new value
-     * @param {RouteTest} newTest the new route test at the specified index
-     */
     setTest(index, newTest) {
         validator.checkUndefinedArray([index, newTest], ["index", "newTest"]);
         validator.checkDataType(index, "index", "number");
-        validator.checkInstanceType(newTest, "newTest", "RouteTest");
         validator.checkIndexRange(this.#tests, "tests", index);
+        this.#checkIsRouteTest(newTest, "newTest");
 
         this.#tests[index] = newTest;
     }
 
-    /**
-     * Used to add a new route test to the array of `tests`.
-     * @param {RouteTest} test the route test that will be pushed to the end of the array of `tests`
-     */
     addTest(test) {
         validator.checkUndefined(test, "test");
-        validator.checkInstanceType(test, "test", "RouteTest");
+        this.#checkIsRouteTest(test, "test");
         this.#tests.push(test);
     }
 
-    /**
-     * Used to remove a route test from the array of `tests` at the specified `index`.
-     * @param {Int} index specifies which route test will be removed from the array of `tests`
-     * @returns {RouteTest} the route test that was removed from the array of `tests`
-     */
     removeTest(index) {
         validator.checkUndefined(index, "index");
         validator.checkDataType(index, "index", "number");
@@ -404,19 +129,40 @@ class RouteTester extends Tester {
     }
 
     /**
-     * Creates an array of object names for each object in an array used to determine which object in array didn't fullfill requirements during validation.
-     * @param {String} name a name that will be given to each object followed by their index
-     * @param {Int} length the length of the array of objects
-     * @returns {Array<String>} an array of object names
+     * Used to check if a provided test fulfills the requirements to be a `RouteTest`.
+     * @param {object} object the object that is check to be the a `RouteTest`
+     * @param {String} objectName the name of the `object` used when throwing an error
      */
-    #createObjectNames(name, length) {
-        let names = [];
-        
-        for (let i = 0; i < length; i++) {
-            names.push(`${name}${i}`);
-        }
+    #checkIsRouteTest(object, objectName) {
+        const { output, body, config, params, querys } = object;
 
-        return names;
+        if (output === undefined)
+            throw new Error(`${objectName} argument is missing property .output: RouteTesterOutput`);
+
+        if (output.data === undefined) 
+            throw new Error(`${objectName} argument is missing property .output.data: any`);
+
+        if (output.status === undefined)
+            throw new Error(`${objectName} argument is missing property .output.status: HttpStatusCode`);
+
+        validator.checkIsHttpStatusCode(output.status, `${objectName}.output.status`);
+
+        validateDefinedObject(body, `${objectName}.body`);
+        validateDefinedObject(config, `${objectName}.config`);
+        validateDefinedObject(params, `${objectName}.params`);
+        validateDefinedObject(querys, `${objectName}.querys`);
+    }
+
+    /**
+     * Used to check a array of objects fulfill the requirements to be a `RouteTest`.
+     * @param {object[]} objects an array of objects that are check if they fulfill being a `RouteTest`
+     * @param {String[]} argumentName the name of the argument where the array of `objects` was provided, used when error is thrown
+     */
+    #checkIsRouteTests(objects, argumentName) {
+        // checks if each test has the structure of type RouteTest
+        objects.forEach((object, index) => {
+            this.#checkIsRouteTest(object, `${argumentName}[${index}]`);
+        });
     }
 
     /**
@@ -469,27 +215,18 @@ class RouteTester extends Tester {
         return url;
     }
 
-    /**
-     * The `run` method goes through the arrays of defined information using them to test the route defined by the `url` attribute using the define `method`.
-     * 
-     * Information of the test is logged into the console determining if the test resulted the expected output and if not it logs what the expected and actual
-     * output was.
-     * 
-     * The `run` method also calls the `time` method that logs the duration to get a response from the route.
-     */
     async run() {
         // logs information
         console.log(`\nRunning ${this.getName()} used to ${this.getDescription()}:`);
         
         // loops through each test
         for (let i = 0; i < this.#tests.length; i++) {
-
             let requestURL = this.#url;
             const currentTest = this.#tests[i];
 
             // checks if there are params
             if (Object.keys(currentTest.params).length > 0) {
-                requestURL  = this.#replaceParamPlaceHolders(requestURL, currentTest.params);
+                requestURL = this.#replaceParamPlaceHolders(requestURL, currentTest.params);
             }
 
             // checks if there are querys
@@ -543,11 +280,4 @@ class RouteTester extends Tester {
             }
         }  
     }
-}
-
-export {
-    RouteTester as default,
-    RouteTest,
-    RouteTesterOutput,
-    RouteTesterMethods
 }

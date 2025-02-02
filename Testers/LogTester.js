@@ -1,62 +1,20 @@
-import FunctionTester, { FunctionTesterSample } from "./FunctionTester.js";
+import FunctionTester from "./FunctionTester.js";
 import { arraysEqual, jsonsEqual } from "../utils.js";
 
 /**
  * The `logTestMapper` is used by the custom log function to determine which tester and test is being runned and where the logged
  * information needs to go.
- * 
+ *
+ * @property {TesterManager} `manager` determines which tester manager is running the tester
  * @property {String} `tester` determine which tester is being runned
  * @property {Number} `test` determine which test is being runned
  */
 let logTestMapper = {
-    tester: new String,
-    test: new Number
+    manager: null,
+    tester: null,
+    test: null
 }
 
-/**
- * The `LogTester` creates an object that is used to test a function by passing inputs through the parameters and checking it the 
- * expected output is logged into the console.
- * 
- * The `LogTester` is a child class to the `FunctionTester` class and inherits the attributes:
- * - `name` - the name of the tester
- * - `description` - a description of what the tester tests
- * - `function` - the function that the tester tests
- * - `inputOutputSamples` - an array of sample inputs and output used to test the `function`
- * 
- * The `logTester` methods include:
- * - getter methods
- * - setter methods
- * - `run` - which runs the tests on the `function`
- * - `result` - which is used by the custom log function to pass the results to the tester
- * 
- * To get what is logged into the console by the tested `function` the `console.log` function is replaced with a custome log function 
- * that takes the given information and passes it to the correct tester and test using the `logTestMapper`. The `logTestMapper` is 
- * used to determine which tester and test is being runned and where the logged information needs to go.
- * 
- * Information on the tests are logged into the console, if a test fails it logs what the actual output was and what the expected 
- * output was.
- * 
- * Example:
- * 
- *      function addNumbers(num1, num2) {
- *          console.log(num1 + num2);
- *      }
- * 
- *      const sumTester = new ReturnTester(
- *          "Sum Tester",
- *          "tests the addNumbers function",
- *          addNumbers,
- *          [
- *              new FunctionTesterSample([2, 5], 7),
- *              new FunctionTesterSample([7, 3], 10),
- *              new FunctionTesterSample([12, 7], 19)
- *          ]
- *      );
- * 
- *      sumTester.run();
- * 
- * @extends {FunctionTester}
- */
 class LogTester extends FunctionTester {
 
     /**
@@ -64,65 +22,10 @@ class LogTester extends FunctionTester {
      */
     #originalLogFunction = console.log;
     
-    /**
-     * The `LogTester` creates an object that is used to test a function by passing inputs through the parameters and checking it the 
-     * expected output is logged into the console.
-     * 
-     * The `LogTester` is a child class to the `FunctionTester` class and inherits the attributes:
-     * - `name` - the name of the tester
-     * - `description` - a description of what the tester tests
-     * - `function` - the function that the tester tests
-     * - `inputOutputSamples` - an array of sample inputs and output used to test the `function`
-     * 
-     * The `logTester` methods include:
-     * - getter methods
-     * - setter methods
-     * - `run` - which runs the tests on the `function`
-     * - `result` - which is used by the custom log function to pass the results to the tester
-     * 
-     * To get what is logged into the console by the tested `function` the `console.log` function is replaced with a custome log function 
-     * that takes the given information and passes it to the correct tester and test using the `logTestMapper`. The `logTestMapper` is 
-     * used to determine which tester and test is being runned and where the logged information needs to go.
-     * 
-     * Information on the tests are logged into the console, if a test fails it logs what the actual output was and what the expected 
-     * output was.
-     * 
-     * Example:
-     * 
-     *      function addNumbers(num1, num2) {
-     *          console.log(num1 + num2);
-     *      }
-     * 
-     *      const sumTester = new ReturnTester(
-     *          "Sum Tester",
-     *          "tests the addNumbers function",
-     *          addNumbers,
-     *          [
-     *              new FunctionTesterSample([2, 5], 7),
-     *              new FunctionTesterSample([7, 3], 10),
-     *              new FunctionTesterSample([12, 7], 19)
-     *          ]
-     *      );
-     * 
-     *      sumTester.run();
-     * 
-     * @param {String} name the name of the tester
-     * @param {String} description a description of what the tester is testing
-     * @param {Function} func the function that is tested by the tester
-     * @param {Array<FunctionTesterSample>} inputOutputSamples an array of sample inputs and output that are used to test the `function`
-     * 
-     * @extends {FunctionTester}
-     */
     constructor(name, description, func, inputOutputSamples) {
         super(name, description, func, inputOutputSamples);
     }
 
-    /**
-     * Used to run the sample inputs and expected outputs on the given `function`.
-     * 
-     * Information on the tests will be logged into the console and the method will also run the time method to provide the duration 
-     * of the given `function`'s process.
-     */
     async run() {
         // logs information
         this.#originalLogFunction(`\nRunning ${this.getName()} used to ${this.getDescription()}:`);
@@ -131,10 +34,8 @@ class LogTester extends FunctionTester {
 
         for (let i = 0; i < inputOutputSamples.length; i++) {
             // updates tester mapper 
-            logTestMapper = {
-                tester: this.getName(),
-                test: i
-            }
+            logTestMapper.tester = this.getName()
+            logTestMapper.test = i;
 
             const inputs = inputOutputSamples[i].inputs;
             const startTime = new Date().getTime();
@@ -150,11 +51,6 @@ class LogTester extends FunctionTester {
         }
     }
 
-    /**
-     * Is used by the custom log function to pass the results to the tester
-     * @param {Int} testNumber identifies which test the output must go to
-     * @param {*} output the output of the `function` 
-     */
     async result(testNumber, output) {
         const expectedOutput = this.getInputOutputSamples()[testNumber].output;
 
