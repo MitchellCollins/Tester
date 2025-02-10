@@ -1,14 +1,34 @@
 {
   "name": "@mitchell-collins/tester",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Used to test code",
   "main": "index.js",
   "exports": {
     ".": {
       "types": {
+        "require": "./index.d.cts",
         "default": "./index.d.ts"
       },
+      "Tester": {
+        "require": "./lib/Testers/Tester.cjs"
+      },
+      "FunctionTester": {
+        "require": "./lib/Testers/FunctionTester.cjs"
+      },
+      "ReturnTester": {
+        "require": "./lib/Testers/ReturnTester.cjs"
+      },
+      "LogTester": {
+        "require": "./lib/Testers/LogTester.cjs"
+      },
+      "RouteTester": {
+        "require": "./lib/Testers/RouteTester.cjs"
+      },
+      "TesterManager": {
+        "require": "./lib/TesterManager.cjs"
+      },
       "default": {
+        "require": "./index.cjs",
         "default": "./index.js"
       }
     }
@@ -30,8 +50,8 @@
   },
   "homepage": "https://github.com/MitchellCollins/Tester#readme",
   "dependencies": {
-    "@mitchell-collins/superclass": "^1.0.3",
-    "@mitchell-collins/validator": "^1.5.8",
+    "@mitchell-collins/superclass": "^1.1.3",
+    "@mitchell-collins/validator": "^1.6.8",
     "axios": "^1.7.9"
   }
 }

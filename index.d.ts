@@ -2,7 +2,11 @@ import { AxiosRequestConfig, HttpStatusCode } from "axios";
 
 export {
     AxiosRequestConfig,
-    HttpStatusCode
+    HttpStatusCode,
+    FunctionTesterSample,
+    RouteTesterMethods,
+    RouteTesterOutput,
+    RouteTest
 }
 
 /**
@@ -80,14 +84,6 @@ export class Tester {
      * @param newDescription the new `description` of what the tester is testing
      */
     setDescription(newDescription: string): void;
-}
-
-/**
- * The `FunctionTesterSample` is an object that defines an array of inputs and an output that is used to test a function.
- */
-export type FunctionTesterSample = {
-    inputs: any[],
-    output: any
 }
 
 /**
@@ -390,51 +386,6 @@ export class LogTester extends FunctionTester {
      * @param output the output of the `function` 
      */
     result(testNumber: int, output: any): Promise<void>;
-}
-
-/**
- * The request methods that the route tester is capable of performing.
- */
-export type RouteTesterMethods = 
-    "get"
-    | "post"
-    | "patch"
-    | "put"
-    | "delete"
-
-/**
- * The `RouteTesterOutput` is an object that is used to define the expected output that is returned from a route that is tested
- * by an instance of the `RouteTester` constructor. The expected output is defined and is compared against the actual output returned 
- * by the tester to determine if the route pasted the test. 
- * 
- * There are two key information that is checked to determine if the route works as it is intended to do, these information include:
- * - data - the expected data that the route response with to the request
- * - status - the expected status of the response
- * 
- * The `data` property can have the value of anything, but the `status` property must have a value of `HttpStatusCode`.
- */
-export type RouteTesterOutput = {
-    data: any, 
-    status: HttpStatusCode
-}
-
-/**
- * The `RouteTest` is an object that defines various information that is used to test a route by a instance of the `RouteTester`
- * constructor.
- * 
- * The information that it defines include:
- * - `output` - the expected output from the tested route
- * - `body` - a object that is passed through the body during a request to the route
- * - `config` - a object that is passed through the config during a request to the route
- * - `querys` - a object that is passed through the querys during a request to the route
- * - `params` - a object that is passed through the params during a request to the route
- */
-export type RouteTest = {
-    output: RouteTesterOutput,
-    body?: object | null,
-    config?: AxiosRequestConfig<any> | null,
-    params?: object | null,
-    querys?: object | null
 }
 
 /**
@@ -806,6 +757,6 @@ export class TesterManager {
     run(): Promise<void>;
 }
 
-const testerManager = new TesterManager();
+const testerManager: TesterManager = new TesterManager();
 
 export default testerManager;
