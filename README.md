@@ -129,21 +129,37 @@ testerManager.run();
 ```
 
 ## Exports
-- `testerManager` as default
-- `TesterManager`
-- `Tester`
-- `FunctionTester`
-- `FunctionTesterSample`
-- `RouteTester`
-- `RouteTest`
-- `RouteTesterMethods`
-- `RouteTesterOutput`
-- `HttpStatusCode`
-- `AxiosRequestConfig`
-- `LogTester`
-- `ReturnTester`
+### ESModule & CommonJS
+- `.`
+    - `testerManager` as default
+    - `TesterManager`
+    - `Tester`
+    - `FunctionTester`
+    - `FunctionTesterSample`
+    - `RouteTester`
+    - `RouteTest`
+    - `RouteTesterMethods`
+    - `RouteTesterOutput`
+    - `HttpStatusCode`
+    - `AxiosRequestConfig`
+    - `LogTester`
+    - `ReturnTester`
 
-### Dependencies
+### Only CommonJS
+- `./Tester`
+    - `Tester` as default
+- `./FunctionTester`
+    - `FunctionTester` as default
+- `./ReturnTester`
+    - `ReturnTester` as default
+- `./LogTester`
+    - `LogTester` as default
+- `./RouteTester`
+    - `RouteTester` as default
+- `./TesterManager`
+    - `TesterManager` as default
+
+## Dependencies
 - axios
     - https://github.com/axios/axios
     - https://www.npmjs.com/package/axios
