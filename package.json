@@ -31,6 +31,24 @@
         "require": "./index.cjs",
         "default": "./index.js"
       }
+    },
+    "./Tester": {
+      "require": "./lib/Testers/Tester.cjs"
+    },
+    "./FunctionTester": {
+      "require": "./lib/Testers/FunctionTester.cjs"
+    },
+    "./ReturnTester": {
+      "require": "./lib/Testers/ReturnTester.cjs"
+    },
+    "./LogTester": {
+      "require": "./lib/Testers/LogTester.cjs"
+    },
+    "./RouteTester": {
+      "require": "./lib/Testers/RouteTester.cjs"
+    },
+    "./TesterManager": {
+      "require": "./lib/TesterManager.cjs"
     }
   },
   "type": "module",
