@@ -1,9 +1,9 @@
-import Tester from "./Testers/Tester.js";
-import FunctionTester from "./Testers/FunctionTester.js";
-import RouteTester from "./Testers/RouteTester.js";
-import LogTester from "./Testers/LogTester.js";
-import ReturnTester from "./Testers/ReturnTester.js";
-import TesterManager from "./TesterManager.js";
+import Tester from "./lib/Testers/Tester.js";
+import FunctionTester from "./lib/Testers/FunctionTester.js";
+import RouteTester from "./lib/Testers/RouteTester.js";
+import LogTester from "./lib/Testers/LogTester.js";
+import ReturnTester from "./lib/Testers/ReturnTester.js";
+import TesterManager from "./lib/TesterManager.js";
 
 const testerManager = new TesterManager();
 
