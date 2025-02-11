@@ -4,9 +4,17 @@ declare global {
     /**
      * The `FunctionTesterSample` is an object that defines an array of inputs and an output that is used to test a function.
      */
-    type FunctionTesterSample = {
+    type ReturnTesterSample = {
         inputs: any[],
         output: any
+    }
+
+    /**
+     * The `LogTesterSample` is an object that defines an array of inputs and a array of outputs that is used to test a function.
+     */
+    type LogTesterSample = {
+        inputs: any[],
+        outputs: any[]
     }
 
     /**

@@ -3,7 +3,8 @@ import { AxiosRequestConfig, HttpStatusCode } from "axios";
 export {
     AxiosRequestConfig,
     HttpStatusCode,
-    FunctionTesterSample,
+    ReturnTesterSample,
+    LogTesterSample,
     RouteTesterMethods,
     RouteTesterOutput,
     RouteTest
@@ -95,7 +96,6 @@ export class Tester {
  * 
  * The `FunctionTester` constructor defines more attributes these include:
  * - `function` - which is the `function` that is going to be tested
- * - `inputOutputSamples` - which is an array of test that that will be runned on the `function`
  * 
  * @extends Tester
  */
@@ -110,16 +110,14 @@ export class FunctionTester extends Tester {
      * 
      * The `FunctionTester` constructor defines more attributes these include:
      * - `function` - the `function` that is going to be tested
-     * - `inputOutputSamples` - an array of sample inputs and outputs that will be runned on the `function` as a test
      * 
      * @param name the name of the tester
      * @param description a description of what the tester is testing
      * @param func the `function` that is going to be tested
-     * @param inputOutputSamples an array of sample inputs and outputs that will be runned on the `function` as a test
      * 
      * @extends Tester
      */
-    constructor(name: string, description: string, func: Function, inputOutputSamples: FunctionTesterSample[]);
+    constructor(name: string, description: string, func: Function);
 
     /**
      * Returns the `function` that is going to be tested.
@@ -128,49 +126,10 @@ export class FunctionTester extends Tester {
     getFunction(): Function;
 
     /**
-     * Returns the `inputOutputSamples` that are going to be used to test the `function`.
-     * @returns an array of sample inputs and outputs that will be runned on the `function` as a test
-     */
-    getInputOutputSamples(): FunctionTesterSample[];
-
-    /**
-     * Returns the `FunctionTesterSample` that is in the `inputOutputSamples` array at the specified `index`.
-     * @param index specifies which `FunctionTesterSample` to get from `inputOutputSamples` array 
-     * @returns the `FunctionTesterSample` at specified `index`
-     */
-    getInputOutputSample(index: int): FunctionTesterSample;
-
-    /**
      * Used to set the `function` that is going to be tested.
      * @param newFunction the new `function` that is going to be tested
      */
     setFunction(newFunction: Function): void;
-
-    /**
-     * Used to set the `inputOutputSamples` that is used to test the `function`.
-     * @param newInputOutputSamples the new array of sample inputs and outputs that will be runned on the `function` as a test
-     */
-    setInputOutputSamples(newInputOutputSamples: FunctionTesterSample[]): void;
-
-    /**
-     * Used to set a new value to a `FunctionTesterSample` at the specified `index` in the `inputOutputSamples` array.
-     * @param index specifies which `FunctionTesterSample` in the `inputOutputSamples` array will have its value changed
-     * @param newInputOutputSample the new value for the `FunctionTesterSample` in the `inputOutputSamples` array
-     */
-    setInputOutputSample(index: int, newInputOutputSample: FunctionTesterSample): void;
-
-    /**
-     * Used to add a new sample of inputs and output to an array of `sampleInputsOutputs`.
-     * @param inputOutputSample a sample of inputs and output that is added to the `inputOutputSamples` array
-     */
-    addInputOutputSample(inputOutputSample: FunctionTesterSample): void;
-
-    /**
-     * Used to remove a sample of inputs and output from the array of `inputOutputSamples` at the specified `index`.
-     * @param index specifies which sample of inputs and output to remove
-     * @returns the removed sample of inputs and output
-     */
-    removeInputOutputSample(index: int): FunctionTesterSample;
 }
 
 /**
@@ -264,7 +223,46 @@ export class ReturnTester extends FunctionTester {
      * 
      * @extends FunctionTester
      */
-    constructor(name: string, description: string, func: Function, inputOutputSample: FunctionTesterSample);
+    constructor(name: string, description: string, func: Function, inputOutputSample: ReturnTesterSample[]);
+
+    /**
+     * Used to get the attribute `inputOutputSamples`.
+     * @returns the value of the attribute `inputOutputSamples`.
+     */
+    getInputOutputSamples(): ReturnTesterSample[];
+
+    /**
+     * Used to get a `ReturnTesterSample` from `inputOutputSamples` array at the specified `index`.
+     * @param index specifies which `ReturnTesterSample` to get from `inputOutputSamples` array
+     * @returns the `ReturnTesterSample` at the specified `index` in the `inputOutputSamples` array
+     */
+    getInputOutputSample(index: int): ReturnTesterSample;
+
+    /**
+     * Used to set a new value of the attribute `inputOutputSamples`.
+     * @param newInputOutputSamples the new value that is set to the attribute `inputOutputSamples`
+     */
+    setInputOutputSamples(newInputOutputSamples: ReturnTesterSample[]): void;
+
+    /**
+     * Used to set a new value of `ReturnTesterSample` at the specified `index` of the attribute `inputOutputSamples` array.
+     * @param index specifies which `ReturnTesterSample` from the attribute `inputOutputSamples` array is assigned a new value 
+     * @param newInputOutputSample the new value that is assigned to the `ReturnTesterSample` at the specified `index` of the attribute `inputOutputSamples` array
+     */
+    setInputOutputSample(index: int, newInputOutputSample: ReturnTesterSample): void;
+
+    /**
+     * Used to add a new `ReturnTesterSample` to the attribute `inputOutputSamples` array.
+     * @param inputOutputSample the new `ReturnTesterSample` that is added to the end of the attribute `inputOutputSamples` array
+     */
+    addInputOutputSample(inputOutputSample: ReturnTesterSample): void;
+
+    /**
+     * Used to remove a `ReturnTesterSample` from the attribute `inputOutputSamples` array at the specified `index`.
+     * @param index specifies which `ReturnTesterSample` is removed from the attribute `inputOutputSamples` array
+     * @returns the `ReturnTesterSample` that is removed from the attribute `inputOutputSamples` array 
+     */
+    removeInputOutputSample(index: int): ReturnTesterSample;
 
     /**
      * Used to run the sample inputs and expected outputs on the given `function`.
@@ -302,6 +300,8 @@ export class ReturnTester extends FunctionTester {
  * 
  *      function addNumbers(num1, num2) {
  *          console.log(num1 + num2);
+ *          console.log(num1);
+ *          console.log(num2);
  *      }
  * 
  *      const sumTester = new ReturnTester(
@@ -309,9 +309,9 @@ export class ReturnTester extends FunctionTester {
  *          "tests the addNumbers function",
  *          addNumbers,
  *          [
- *              { inputs: [2, 5], output: 7 },
- *              { inputs: [7, 3], output: 10 },
- *              { inputs: [12, 7], output: 19 }
+ *              { inputs: [2, 5], output: [7, 2, 5] },
+ *              { inputs: [7, 3], output: [10, 7, 3] },
+ *              { inputs: [12, 7], output: [19, 12, 7] }
  *          ]
  *      );
  * 
@@ -348,6 +348,8 @@ export class LogTester extends FunctionTester {
      * 
      *      function addNumbers(num1, num2) {
      *          console.log(num1 + num2);
+     *          console.log(num1);
+     *          console.log(num2);
      *      }
      * 
      *      const sumTester = new ReturnTester(
@@ -355,9 +357,9 @@ export class LogTester extends FunctionTester {
      *          "tests the addNumbers function",
      *          addNumbers,
      *          [
-     *              { inputs: [2, 5], output: 7 },
-     *              { inputs: [7, 3], output: 10 },
-     *              { inputs: [12, 7], output: 19 }
+     *              { inputs: [2, 5], outputs: [7, 2, 5] },
+     *              { inputs: [7, 3], outputs: [10, 7, 3] },
+     *              { inputs: [12, 7], outputs: [19, 12, 7] }
      *          ]
      *      );
      * 
@@ -366,11 +368,50 @@ export class LogTester extends FunctionTester {
      * @param name the name of the tester
      * @param description a description of what the tester is testing
      * @param func the function that is tested by the tester
-     * @param inputOutputSamples an array of sample inputs and output that are used to test the `function`
+     * @param inputOutputSamples an array of sample inputs and an array of outputs that are used to test the `function`
      * 
      * @extends {FunctionTester}
      */
-    constructor(name: string, description: string, func: Function, inputOutputSamples: FunctionTesterSample[]);
+    constructor(name: string, description: string, func: Function, inputOutputSamples: LogTesterSample[]);
+
+    /**
+     * Used to get the attribute `inputOutputSamples`.
+     * @returns the value of the attribute `inputOutputSamples`.
+     */
+    getInputOutputSamples(): LogTesterSample[];
+
+    /**
+     * Used to get a `LogTesterSample` from `inputOutputSamples` array at the specified `index`.
+     * @param index specifies which `LogTesterSample` to get from `inputOutputSamples` array
+     * @returns the `LogTesterSample` at the specified `index` in the `inputOutputSamples` array
+     */
+    getInputOutputSample(index: int): LogTesterSample;
+
+    /**
+     * Used to set a new value of the attribute `inputOutputSamples`.
+     * @param newInputOutputSamples the new value that is set to the attribute `inputOutputSamples`
+     */
+    setInputOutputSamples(newInputOutputSamples: LogTesterSample[]): void;
+
+    /**
+     * Used to set a new value of `LogTesterSample` at the specified `index` of the attribute `inputOutputSamples` array.
+     * @param index specifies which `LogTesterSample` from the attribute `inputOutputSamples` array is assigned a new value 
+     * @param newInputOutputSample the new value that is assigned to the `LogTesterSample` at the specified `index` of the attribute `inputOutputSamples` array
+     */
+    setInputOutputSample(index: int, newInputOutputSample: LogTesterSample): void;
+
+    /**
+     * Used to add a new `LogTesterSample` to the attribute `inputOutputSamples` array.
+     * @param inputOutputSample the new `LogTesterSample` that is added to the end of the attribute `inputOutputSamples` array
+     */
+    addInputOutputSample(inputOutputSample: LogTesterSample): void;
+
+    /**
+     * Used to remove a `LogTesterSample` from the attribute `inputOutputSamples` array at the specified `index`.
+     * @param index specifies which `LogTesterSample` is removed from the attribute `inputOutputSamples` array
+     * @returns the `LogTesterSample` that is removed from the attribute `inputOutputSamples` array 
+     */
+    removeInputOutputSample(index: int): LogTesterSample;
 
     /**
      * Used to run the sample inputs and expected outputs on the given `function`.

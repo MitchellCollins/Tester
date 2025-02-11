@@ -19,9 +19,15 @@ A `TesterManager` is already constructor and exported as default and is used to 
 
 ## Types
 ```Typescript 
-type FunctionTesterSample = {
+type ReturnTesterSample = {
     inputs: any[],
     output: any
+}
+```
+```Typescript
+type LogTesterSample = {
+    inputs: any[],
+    outputs: any[]
 }
 ```
 ```Typescript
@@ -71,20 +77,22 @@ testerManager.createLogTester(
     "Subtract Tester",
     "tests the subtractNumbers function",
     function subtractNumbers(num1, num2) {
+        console.log(num1);
+        console.log(num2);
         console.log(num1 - num2);
     },
     [
         {
             inputs: [3, 1], 
-            output: 2
+            outputs: [3, 1, 2]
         },
         {
             inputs: [7, 4], 
-            output: 3
+            outputs: [7, 4, 3]
         },
         {
             inputs: [10, 5], 
-            output: 5
+            output: [10, 5, 5]
         }
     ]
 );
