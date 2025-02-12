@@ -663,6 +663,13 @@ export class RouteTester extends Tester {
 }
 
 /**
+ * Used to specify whether to override an existing `Tester` that has the same name, if there is one.
+ */
+type TesterManagerOptions = {
+    override?: boolean | null
+}
+
+/**
  * The `TesterManager` is used to help manage the testers. The testers are instances of constructors that are the child classes 
  * of the `Tester` constructor class. These instances are used to test code and information of the tests are logged into the console.
  * 
@@ -754,8 +761,9 @@ export class TesterManager {
      * @param url the url of the route thet tester is testing
      * @param method the http request method the tester makes to the route
      * @param tests an array of the route tests
+     * @param options a object that is used to specify if user wants to override an existing `Tester` with the same name in `testers` object
      */
-    createRouteTester(name: string, description: string, url: string, method: RouteTesterMethods, tests: RouteTest[]): void;
+    createRouteTester(name: string, description: string, url: string, method: RouteTesterMethods, tests: RouteTest[], options: TesterManagerOptions | undefined | null): void;
 
     /**
      * Used to create a instance of the `ReturnTester` constructor that is than pushed into the `testers` object.
@@ -763,8 +771,9 @@ export class TesterManager {
      * @param description a description of what the tester tests
      * @param func the function that the tester is testing
      * @param inputOutputSamples an array of sample inputs and output used to test the `function`
+     * @param options a object that is used to specify if user wants to override an existing `Tester` with the same name in `testers` object
      */
-    createReturnTester(name: string, description: string, func: Function, inputOutputSamples: FunctionTesterSample[]): void;
+    createReturnTester(name: string, description: string, func: Function, inputOutputSamples: FunctionTesterSample[], options: TesterManagerOptions | undefined | null): void;
 
     /**
      * Used to create a instance of the `LogTester` constructor that is than pushed into the `testers` object.
@@ -772,14 +781,33 @@ export class TesterManager {
      * @param description a description of what the tester tests
      * @param func the function that the tester is testing
      * @param inputOutputSamples an array of sample inputs and output used to test the `function`
+     * @param options a object that is used to specify if user wants to override an existing `Tester` with the same name in `testers` object
      */
-    createLogTester(name: string, description: string, func: Function, inputOutputSamples: FunctionTesterSample[]): void;
+    createLogTester(name: string, description: string, func: Function, inputOutputSamples: FunctionTesterSample[], options: TesterManagerOptions | undefined | null): void;
+
+    /**
+     * Used to get a tester from the `testers` object using its name.
+     * @param name the name of the tester to get
+     */
+    getTester(name: string): ReturnTester | ReturnTester | LogTester | undefined; 
+
+    /**
+     * Used to override an existing Tester with a `newTester` in the `testers` object.
+     * @param newTester the new `Tester` which will override the existing `Tester`
+     */
+    override(newTester: RouteTester | ReturnTester | LogTester): void;
 
     /**
      * Used to push a tester into the `testers` object.
      * @param tester is pushed into the `testers` object
      */
     push(tester: RouteTester | ReturnTester | LogTester): void;
+
+    /**
+     * Used to remove a `Tester` from the `testers` object.
+     * @param name the name of the `Tester` that will be removed
+     */
+    remove(name: string): RouteTester | ReturnTester | LogTester | undefined;
 
     /**
      * Holds the `console.log` function, used to reset the value of the `console.log` function.
