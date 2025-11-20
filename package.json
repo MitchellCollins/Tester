@@ -1,6 +1,6 @@
 {
   "name": "@mitchell-collins/tester",
-  "version": "2.3.3",
+  "version": "2.4.3",
   "description": "Used to test code",
   "main": "index.js",
   "exports": {
