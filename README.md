@@ -143,14 +143,15 @@ testerManager.run();
     - `TesterManager`
     - `Tester`
     - `FunctionTester`
-    - `FunctionTesterSample`
     - `RouteTester`
     - `RouteTest`
     - `RouteTesterMethods`
     - `RouteTesterOutput`
     - `HttpStatusCode`
     - `AxiosRequestConfig`
+    - `LogTesterSample`
     - `LogTester`
+    - `ReturnTesterSample`
     - `ReturnTester`
 
 ### Only CommonJS

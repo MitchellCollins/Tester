@@ -2,12 +2,7 @@ import { AxiosRequestConfig, HttpStatusCode } from "axios";
 
 export {
     AxiosRequestConfig,
-    HttpStatusCode,
-    ReturnTesterSample,
-    LogTesterSample,
-    RouteTesterMethods,
-    RouteTesterOutput,
-    RouteTest
+    HttpStatusCode
 }
 
 /**
@@ -130,6 +125,14 @@ export class FunctionTester extends Tester {
      * @param newFunction the new `function` that is going to be tested
      */
     setFunction(newFunction: Function): void;
+}
+
+/**
+ * The `ReturnTesterSample` is an object that defines an array of inputs and an array outputs that is used to test a function.
+ */
+export type ReturnTesterSample = {
+    inputs: any[],
+    output: any
 }
 
 /**
@@ -271,6 +274,14 @@ export class ReturnTester extends FunctionTester {
      * of the given `function`'s process.
      */
     run(): Promise<void>;
+}
+
+/**
+ * The `LogTesterSample` is an object that defines an array of inputs and a array of outputs that is used to test a function.
+ */
+export type LogTesterSample = {
+    inputs: any[],
+    outputs: any[]
 }
 
 /**
@@ -427,6 +438,46 @@ export class LogTester extends FunctionTester {
      * @param output the output of the `function` 
      */
     result(testNumber: int, output: any): Promise<void>;
+}
+
+/**
+ * The request methods that the route tester is capable of performing.
+ */
+export type RouteTesterMethods = "get" | "post" | "put" | "patch" | "delete";
+
+/**
+ * The `RouteTesterOutput` is an object that is used to define the expected output that is returned from a route that is tested
+ * by an instance of the `RouteTester` constructor. The expected output is defined and is compared against the actual output returned 
+ * by the tester to determine if the route pasted the test. 
+ * 
+ * There are two key information that is checked to determine if the route works as it is intended to do, these information include:
+ * - data - the expected data that the route response with to the request
+ * - status - the expected status of the response
+ * 
+ * The `data` property can have the value of anything, but the `status` property must have a value of `HttpStatusCode`.
+ */
+export type RouteTesterOutput = {
+    data: any,
+    status: HttpStatusCode
+}
+
+/**
+ * The `RouteTest` is an object that defines various information that is used to test a route by a instance of the `RouteTester`
+ * constructor.
+ * 
+ * The information that it defines include:
+ * - `output` - the expected output from the tested route
+ * - `body` - a object that is passed through the body during a request to the route
+ * - `config` - a object that is passed through the config during a request to the route
+ * - `querys` - a object that is passed through the querys during a request to the route
+ * - `params` - a object that is passed through the params during a request to the route
+ */
+export type RouteTest = {
+    output: RouteTesterOutput,
+    body?: object | null,
+    config?: AxiosRequestConfig | null,
+    params?: object | null,
+    querys?: object | null
 }
 
 /**
@@ -665,7 +716,7 @@ export class RouteTester extends Tester {
 /**
  * Used to specify whether to override an existing `Tester` that has the same name, if there is one.
  */
-type TesterManagerOptions = {
+export type TesterManagerOptions = {
     override?: boolean | null
 }
 
@@ -773,7 +824,7 @@ export class TesterManager {
      * @param inputOutputSamples an array of sample inputs and output used to test the `function`
      * @param options a object that is used to specify if user wants to override an existing `Tester` with the same name in `testers` object
      */
-    createReturnTester(name: string, description: string, func: Function, inputOutputSamples: FunctionTesterSample[], options: TesterManagerOptions | undefined | null): void;
+    createReturnTester(name: string, description: string, func: Function, inputOutputSamples: ReturnTesterSample[], options: TesterManagerOptions | undefined | null): void;
 
     /**
      * Used to create a instance of the `LogTester` constructor that is than pushed into the `testers` object.
@@ -783,7 +834,7 @@ export class TesterManager {
      * @param inputOutputSamples an array of sample inputs and output used to test the `function`
      * @param options a object that is used to specify if user wants to override an existing `Tester` with the same name in `testers` object
      */
-    createLogTester(name: string, description: string, func: Function, inputOutputSamples: FunctionTesterSample[], options: TesterManagerOptions | undefined | null): void;
+    createLogTester(name: string, description: string, func: Function, inputOutputSamples: LogTesterSample[], options: TesterManagerOptions | undefined | null): void;
 
     /**
      * Used to get a tester from the `testers` object using its name.
